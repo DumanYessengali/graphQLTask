@@ -1,0 +1,53 @@
+type User {
+  id: ID!
+  username: String!
+  password: String!
+}
+
+scalar Time
+
+type AuthTokens {
+  accessToken: String!
+  refreshToken: String!
+  expiredAt: Time!
+  userId: ID!
+}
+
+type AuthResponse {
+  authTokens: AuthTokens!
+  user: User!
+}
+
+input SignUpUser {
+  username: String!
+  password: String!
+}
+
+input SignInUser {
+  username: String!
+  password: String!
+}
+
+type Query {
+  user(id: ID!): User!
+}
+
+type Message {
+  message: String!
+}
+input Refresh{
+  refreshToken: String!
+}
+
+type Mutation {
+  signIn(input: SignInUser!): AuthResponse!
+  signUp(input: SignUpUser!): Message!
+  refreshTokens(input: Refresh!): AuthResponse!
+  logout(input: Refresh!):Message!
+}
+
+type Auth {
+  id: ID!
+  refToken: String!
+  userId: ID!
+}
