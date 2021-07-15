@@ -9,9 +9,12 @@ import (
 	"net/http"
 	"os"
 	"twoBinPJ/adapters"
-	graph1 "twoBinPJ/apps/api1/graph"
-	generated1 "twoBinPJ/apps/api1/graph/generated"
+	graph2 "twoBinPJ/apps/api2/graph"
+	generated2 "twoBinPJ/apps/api2/graph/generated"
+	"twoBinPJ/domains/auth"
+	"twoBinPJ/domains/project"
 	"twoBinPJ/domains/user"
+	"twoBinPJ/domains/vulnerability"
 	"twoBinPJ/middleware"
 )
 
@@ -37,11 +40,17 @@ func main() {
 		return
 	}
 
+	authModule := auth.NewAuthModule(db)
 	userModule := user.NewUserModule(db)
+	vulnerabilityModule := vulnerability.NewVulnerabilityModule(db)
+	projectModule := project.NewProjectModule(db)
 
 	router.Use(middleware.AuthMiddleware(user.UserRepository{DB: adapters.Db}))
-	srv := handler.NewDefaultServer(generated1.NewExecutableSchema(generated1.Config{Resolvers: &graph1.Resolver{
-		UserService: userModule.UserService,
+	srv := handler.NewDefaultServer(generated2.NewExecutableSchema(generated2.Config{Resolvers: &graph2.Resolver{
+		AuthModule:          authModule,
+		UserModule:          userModule,
+		VulnerabilityModule: vulnerabilityModule,
+		ProjectModule:       projectModule,
 	}}))
 
 	router.Handle("/", playground.Handler("GraphQL playground", "/query"))

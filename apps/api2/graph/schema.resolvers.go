@@ -5,50 +5,19 @@ package graph
 
 import (
 	"context"
-	"errors"
-	"log"
-	generated1 "twoBinPJ/apps/api1/graph/generated"
-	"twoBinPJ/apps/api1/graph/model"
-	"twoBinPJ/middleware"
+	"twoBinPJ/apps/api2/graph/generated"
+	"twoBinPJ/apps/api2/graph/model"
+	"twoBinPJ/domains/project"
+	"twoBinPJ/domains/user"
+	"twoBinPJ/domains/vulnerability"
 )
 
 func (r *mutationResolver) SignIn(ctx context.Context, input model.SignInUser) (*model.AuthResponse, error) {
-	user, err := r.UserService.GetUserByUsernameService(input.Username)
-
+	token, user, err := r.AuthModule.SignIn(ctx, input.Username, input.Password)
 	if err != nil {
-		log.Printf("user does not exist: %s", err)
-		return nil, errors.New("INITIALIZING_USER_ERROR")
+		return nil, err
 	}
 
-	err = user.ComparePassword(input.Password)
-	if err != nil {
-		log.Printf("error while comparing passwords: %s", err)
-		return nil, errors.New("COMPARING_PASSWORD_ERROR")
-	}
-
-	token, err := user.GenToken(user.ID)
-	if err != nil {
-		log.Printf("creating token error: %s", err)
-		return nil, errors.New("INITIALIZING_TOKENS_ERROR")
-	}
-	userIdCheck, err := r.UserService.CheckIfExistsAuthService(user.ID)
-	if err != nil {
-		log.Printf("error while check user: %s", err)
-		return nil, errors.New("INITIALIZING_USER_ERROR")
-	}
-	if !userIdCheck {
-		err = r.UserService.FillTheAuthService(user.ID, token.RefreshToken)
-		if err != nil {
-			log.Printf("error while inserting new row on auth table: %s", err)
-			return nil, errors.New("INITIALIZING_NEW_TOKEN_ERROR")
-		}
-	} else {
-		err = r.UserService.UpdateAuthService(user.ID, token.RefreshToken)
-		if err != nil {
-			log.Printf("error while inserting new row on auth table: %s", err)
-			return nil, errors.New("UPDATING_TOKEN_ERROR")
-		}
-	}
 	return &model.AuthResponse{
 		AuthTokens: token,
 		User:       user,
@@ -56,90 +25,98 @@ func (r *mutationResolver) SignIn(ctx context.Context, input model.SignInUser) (
 }
 
 func (r *mutationResolver) SignUp(ctx context.Context, input model.SignUpUser) (*model.Message, error) {
-	user := &model.User{
-		Username: input.Username,
-	}
-	err := user.HashPassword(input.Password)
+	message, err := r.AuthModule.SignUp(ctx, input.Username, input.Password)
 	if err != nil {
-		log.Printf("error while creating password, and %s", err)
-		return nil, errors.New("INITIALIZING_PASSWORD_ERROR")
+		return nil, err
 	}
-
-	if _, err := r.UserService.CreateUserService(user); err != nil {
-		log.Printf("error while creating new user: %s", err)
-		return nil, errors.New("INITIALIZING_USER_ERROR")
-	}
-
-	return &model.Message{Message: "you are successfully sing up"}, nil
+	return &model.Message{Message: message}, nil
 }
 
 func (r *mutationResolver) RefreshTokens(ctx context.Context, input model.Refresh) (*model.AuthResponse, error) {
-	currentUser, err := middleware.GetCurrentUserFromCTX(ctx)
-
+	token, user, err := r.AuthModule.RefreshTokens(ctx, input.RefreshToken)
 	if err != nil {
-		log.Printf("token is incorrect or wrong: %s", err)
-		return nil, errors.New("INITIALIZING_TOKEN_ERROR")
+		return nil, err
 	}
-	checkToken, err := r.UserService.CheckTokenBeforeRefreshService(currentUser.ID, input.RefreshToken)
-	if err != nil {
-		log.Printf("token is incorrect or wrong: %s", err)
-		return nil, errors.New("INITIALIZING_TOKEN_ERROR")
-	}
-	if checkToken {
-		token, err := currentUser.GenToken(currentUser.ID)
-		if err != nil {
-			log.Printf("creating token error: %s", err)
-			return nil, errors.New("INITIALIZING_TOKENS_ERROR")
-		}
 
-		err = r.UserService.UpdateAuthService(currentUser.ID, token.RefreshToken)
-		if err != nil {
-			log.Printf("error while inserting new row on auth table: %s", err)
-			return nil, errors.New("UPDATING_TOKEN_ERROR")
-		}
-		return &model.AuthResponse{
-			AuthTokens: token,
-			User:       currentUser,
-		}, nil
-	} else {
-		log.Printf("refreshing token is incorrect or wrong")
-		return nil, errors.New("INITIALIZING_TOKEN_ERROR")
-	}
+	return &model.AuthResponse{
+		AuthTokens: token,
+		User:       user,
+	}, nil
 }
 
 func (r *mutationResolver) Logout(ctx context.Context, input model.Refresh) (*model.Message, error) {
-	currentUser, err := middleware.GetCurrentUserFromCTX(ctx)
-
+	message, err := r.AuthModule.Logout(ctx, input.RefreshToken)
 	if err != nil {
-		log.Printf("token is incorrect or wrong: %s", err)
-		return nil, errors.New("INITIALIZING_TOKEN_ERROR")
+		return nil, err
 	}
-	checkToken, err := r.UserService.CheckTokenBeforeRefreshService(currentUser.ID, input.RefreshToken)
-	if err != nil {
-		log.Printf("token is incorrect or wrong: %s", err)
-		return nil, errors.New("INITIALIZING_TOKEN_ERROR")
-	}
-	if checkToken {
-		err = r.UserService.DeleteAuthService(input.RefreshToken)
-		if err != nil {
-			log.Printf("error while deleting user from auth table: %s", err)
-			return nil, errors.New("DELETING_USER_ERROR")
-		}
-		return &model.Message{Message: "you are logout"}, nil
-	} else {
-		return &model.Message{Message: "you are not logout"}, errors.New("LOGOUT_ERROR")
-	}
+	return &model.Message{Message: message}, nil
 }
 
-func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error) {
-	return r.UserService.GetUserByIDService(id)
+func (r *mutationResolver) ShowTheProjectByID(ctx context.Context, id int) (*project.Project, error) {
+	return r.ProjectModule.ShowTheProjectByID(ctx, id)
 }
 
-// Mutation returns generated1.MutationResolver implementation.
-func (r *Resolver) Mutation() generated1.MutationResolver { return &mutationResolver{r} }
+func (r *mutationResolver) CreateProject(ctx context.Context, input model.CreateProject) (*project.Project, error) {
+	return r.ProjectModule.CreateProjectService(ctx, input.Name, input.ShortDescription, input.Description)
+}
 
-// Query returns generated1.QueryResolver implementation.
-func (r *Resolver) Query() generated1.QueryResolver { return &queryResolver{r} }
+func (r *mutationResolver) UpdateProject(ctx context.Context, id int, input model.UpdateProject) (*model.Message, error) {
+	project, err := r.ProjectModule.ShowTheProjectByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	err = r.ProjectModule.UpdateProject(project, input.Name, input.ShortDescription, input.Description)
+	if err != nil {
+		return nil, err
+	}
+	return &model.Message{Message: "Project successfully updated"}, nil
+}
+
+func (r *mutationResolver) DeleteProject(ctx context.Context, id int) (*model.Message, error) {
+	err := r.ProjectModule.DeleteProject(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return &model.Message{Message: "Project successfully deleted"}, nil
+}
+
+func (r *mutationResolver) ShowTheVulnerabilityByID(ctx context.Context, id int) (*vulnerability.Vulnerability, error) {
+	return r.VulnerabilityModule.ShowVulnerabilityByID(ctx, id)
+}
+
+func (r *mutationResolver) CreateVulnerability(ctx context.Context, input model.CreateVulnerability) (*vulnerability.Vulnerability, error) {
+	return r.VulnerabilityModule.CreateVulnerability(input.Name, input.Description)
+}
+
+func (r *mutationResolver) UpdateVulnerability(ctx context.Context, id int, input model.UpdateVulnerability) (*model.Message, error) {
+	vulnerability, err := r.VulnerabilityModule.ShowVulnerabilityByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	err = r.VulnerabilityModule.UpdateVulnerability(input.Name, input.Description, vulnerability)
+	if err != nil {
+		return nil, err
+	}
+	return &model.Message{Message: "Vulnerability successfully updated"}, nil
+}
+
+func (r *mutationResolver) DeleteVulnerability(ctx context.Context, id int) (*model.Message, error) {
+	err := r.VulnerabilityModule.DeleteVulnerability(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return &model.Message{Message: "Vulnerability successfully deleted"}, nil
+}
+
+func (r *queryResolver) User(ctx context.Context, id string) (*user.User, error) {
+	return r.UserModule.GetUserByIDService(id)
+}
+
+// Mutation returns generated.MutationResolver implementation.
+func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
+
+// Query returns generated.QueryResolver implementation.
+func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

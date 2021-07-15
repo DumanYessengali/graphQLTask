@@ -43,11 +43,62 @@ type Mutation {
   signIn(input: SignInUser!): AuthResponse!
   signUp(input: SignUpUser!): Message!
   refreshTokens(input: Refresh!): AuthResponse!
-  logout(input: Refresh!):Message!
+  logout(input: Refresh!): Message!
+  showTheProjectByID(id: Int!): Project!
+  createProject(input: CreateProject!): Project!
+  updateProject(id:Int!, input: UpdateProject!): Message!
+  deleteProject(id:Int!):Message!
+  showTheVulnerabilityByID(id: Int!): Vulnerability!
+  createVulnerability(input: CreateVulnerability!): Vulnerability!
+  updateVulnerability(id:Int!, input: UpdateVulnerability!): Message!
+  deleteVulnerability(id:Int!):Message!
 }
 
-type Auht {
+type Auth {
   id: ID!
   refToken: String!
   userId: ID!
+}
+
+type Project {
+  id: Int!
+  name: String!
+  shortDescription: String!
+  description: String!
+  private: Boolean!
+  closed: Boolean!
+  orgId: Int!
+  created: Time!
+  updated: Time!
+}
+
+input UpdateProject {
+  name: String
+  shortDescription: String
+  description: String
+}
+
+
+input CreateProject {
+  name: String!
+  shortDescription: String!
+  description: String!
+}
+
+type Vulnerability {
+  id: Int!
+  name: String!
+  description: String!
+  created: Time!
+  updated: Time!
+}
+
+input CreateVulnerability{
+  name: String!
+  description: String!
+}
+
+input UpdateVulnerability{
+  name: String
+  description: String
 }

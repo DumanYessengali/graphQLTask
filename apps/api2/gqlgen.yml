@@ -54,3 +54,13 @@ models:
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
+  User:
+    model: twoBinPJ/domains/user.User
+  Auth:
+    model: twoBinPJ/domains/auth.Auth
+  AuthTokens:
+    model: twoBinPJ/domains/user.AuthTokens
+  Project:
+    model: twoBinPJ/domains/project.Project
+  Vulnerability:
+    model: twoBinPJ/domains/vulnerability.Vulnerability

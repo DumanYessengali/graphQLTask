@@ -11,6 +11,10 @@ import (
 	"sync/atomic"
 	"time"
 	"twoBinPJ/apps/api2/graph/model"
+	"twoBinPJ/domains/auth"
+	"twoBinPJ/domains/project"
+	"twoBinPJ/domains/user"
+	"twoBinPJ/domains/vulnerability"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
@@ -44,7 +48,7 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
-	Auht struct {
+	Auth struct {
 		ID       func(childComplexity int) int
 		RefToken func(childComplexity int) int
 		UserID   func(childComplexity int) int
@@ -67,10 +71,30 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		Logout        func(childComplexity int, input model.Refresh) int
-		RefreshTokens func(childComplexity int, input model.Refresh) int
-		SignIn        func(childComplexity int, input model.SignInUser) int
-		SignUp        func(childComplexity int, input model.SignUpUser) int
+		CreateProject            func(childComplexity int, input model.CreateProject) int
+		CreateVulnerability      func(childComplexity int, input model.CreateVulnerability) int
+		DeleteProject            func(childComplexity int, id int) int
+		DeleteVulnerability      func(childComplexity int, id int) int
+		Logout                   func(childComplexity int, input model.Refresh) int
+		RefreshTokens            func(childComplexity int, input model.Refresh) int
+		ShowTheProjectByID       func(childComplexity int, id int) int
+		ShowTheVulnerabilityByID func(childComplexity int, id int) int
+		SignIn                   func(childComplexity int, input model.SignInUser) int
+		SignUp                   func(childComplexity int, input model.SignUpUser) int
+		UpdateProject            func(childComplexity int, id int, input model.UpdateProject) int
+		UpdateVulnerability      func(childComplexity int, id int, input model.UpdateVulnerability) int
+	}
+
+	Project struct {
+		Closed           func(childComplexity int) int
+		Created          func(childComplexity int) int
+		Description      func(childComplexity int) int
+		ID               func(childComplexity int) int
+		Name             func(childComplexity int) int
+		OrgID            func(childComplexity int) int
+		Private          func(childComplexity int) int
+		ShortDescription func(childComplexity int) int
+		Updated          func(childComplexity int) int
 	}
 
 	Query struct {
@@ -78,9 +102,17 @@ type ComplexityRoot struct {
 	}
 
 	User struct {
-		ID       func(childComplexity int) int
+		Id       func(childComplexity int) int
 		Password func(childComplexity int) int
 		Username func(childComplexity int) int
+	}
+
+	Vulnerability struct {
+		Created     func(childComplexity int) int
+		Description func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Name        func(childComplexity int) int
+		Updated     func(childComplexity int) int
 	}
 }
 
@@ -89,9 +121,17 @@ type MutationResolver interface {
 	SignUp(ctx context.Context, input model.SignUpUser) (*model.Message, error)
 	RefreshTokens(ctx context.Context, input model.Refresh) (*model.AuthResponse, error)
 	Logout(ctx context.Context, input model.Refresh) (*model.Message, error)
+	ShowTheProjectByID(ctx context.Context, id int) (*project.Project, error)
+	CreateProject(ctx context.Context, input model.CreateProject) (*project.Project, error)
+	UpdateProject(ctx context.Context, id int, input model.UpdateProject) (*model.Message, error)
+	DeleteProject(ctx context.Context, id int) (*model.Message, error)
+	ShowTheVulnerabilityByID(ctx context.Context, id int) (*vulnerability.Vulnerability, error)
+	CreateVulnerability(ctx context.Context, input model.CreateVulnerability) (*vulnerability.Vulnerability, error)
+	UpdateVulnerability(ctx context.Context, id int, input model.UpdateVulnerability) (*model.Message, error)
+	DeleteVulnerability(ctx context.Context, id int) (*model.Message, error)
 }
 type QueryResolver interface {
-	User(ctx context.Context, id string) (*model.User, error)
+	User(ctx context.Context, id string) (*user.User, error)
 }
 
 type executableSchema struct {
@@ -109,26 +149,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
-	case "Auht.id":
-		if e.complexity.Auht.ID == nil {
+	case "Auth.id":
+		if e.complexity.Auth.ID == nil {
 			break
 		}
 
-		return e.complexity.Auht.ID(childComplexity), true
+		return e.complexity.Auth.ID(childComplexity), true
 
-	case "Auht.refToken":
-		if e.complexity.Auht.RefToken == nil {
+	case "Auth.refToken":
+		if e.complexity.Auth.RefToken == nil {
 			break
 		}
 
-		return e.complexity.Auht.RefToken(childComplexity), true
+		return e.complexity.Auth.RefToken(childComplexity), true
 
-	case "Auht.userId":
-		if e.complexity.Auht.UserID == nil {
+	case "Auth.userId":
+		if e.complexity.Auth.UserID == nil {
 			break
 		}
 
-		return e.complexity.Auht.UserID(childComplexity), true
+		return e.complexity.Auth.UserID(childComplexity), true
 
 	case "AuthResponse.authTokens":
 		if e.complexity.AuthResponse.AuthTokens == nil {
@@ -179,6 +219,54 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Message.Message(childComplexity), true
 
+	case "Mutation.createProject":
+		if e.complexity.Mutation.CreateProject == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createProject_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateProject(childComplexity, args["input"].(model.CreateProject)), true
+
+	case "Mutation.createVulnerability":
+		if e.complexity.Mutation.CreateVulnerability == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createVulnerability_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateVulnerability(childComplexity, args["input"].(model.CreateVulnerability)), true
+
+	case "Mutation.deleteProject":
+		if e.complexity.Mutation.DeleteProject == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteProject_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteProject(childComplexity, args["id"].(int)), true
+
+	case "Mutation.deleteVulnerability":
+		if e.complexity.Mutation.DeleteVulnerability == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteVulnerability_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteVulnerability(childComplexity, args["id"].(int)), true
+
 	case "Mutation.logout":
 		if e.complexity.Mutation.Logout == nil {
 			break
@@ -202,6 +290,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.RefreshTokens(childComplexity, args["input"].(model.Refresh)), true
+
+	case "Mutation.showTheProjectByID":
+		if e.complexity.Mutation.ShowTheProjectByID == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_showTheProjectByID_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ShowTheProjectByID(childComplexity, args["id"].(int)), true
+
+	case "Mutation.showTheVulnerabilityByID":
+		if e.complexity.Mutation.ShowTheVulnerabilityByID == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_showTheVulnerabilityByID_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ShowTheVulnerabilityByID(childComplexity, args["id"].(int)), true
 
 	case "Mutation.signIn":
 		if e.complexity.Mutation.SignIn == nil {
@@ -227,6 +339,93 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.SignUp(childComplexity, args["input"].(model.SignUpUser)), true
 
+	case "Mutation.updateProject":
+		if e.complexity.Mutation.UpdateProject == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateProject_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateProject(childComplexity, args["id"].(int), args["input"].(model.UpdateProject)), true
+
+	case "Mutation.updateVulnerability":
+		if e.complexity.Mutation.UpdateVulnerability == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateVulnerability_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateVulnerability(childComplexity, args["id"].(int), args["input"].(model.UpdateVulnerability)), true
+
+	case "Project.closed":
+		if e.complexity.Project.Closed == nil {
+			break
+		}
+
+		return e.complexity.Project.Closed(childComplexity), true
+
+	case "Project.created":
+		if e.complexity.Project.Created == nil {
+			break
+		}
+
+		return e.complexity.Project.Created(childComplexity), true
+
+	case "Project.description":
+		if e.complexity.Project.Description == nil {
+			break
+		}
+
+		return e.complexity.Project.Description(childComplexity), true
+
+	case "Project.id":
+		if e.complexity.Project.ID == nil {
+			break
+		}
+
+		return e.complexity.Project.ID(childComplexity), true
+
+	case "Project.name":
+		if e.complexity.Project.Name == nil {
+			break
+		}
+
+		return e.complexity.Project.Name(childComplexity), true
+
+	case "Project.orgId":
+		if e.complexity.Project.OrgID == nil {
+			break
+		}
+
+		return e.complexity.Project.OrgID(childComplexity), true
+
+	case "Project.private":
+		if e.complexity.Project.Private == nil {
+			break
+		}
+
+		return e.complexity.Project.Private(childComplexity), true
+
+	case "Project.shortDescription":
+		if e.complexity.Project.ShortDescription == nil {
+			break
+		}
+
+		return e.complexity.Project.ShortDescription(childComplexity), true
+
+	case "Project.updated":
+		if e.complexity.Project.Updated == nil {
+			break
+		}
+
+		return e.complexity.Project.Updated(childComplexity), true
+
 	case "Query.user":
 		if e.complexity.Query.User == nil {
 			break
@@ -240,11 +439,11 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		return e.complexity.Query.User(childComplexity, args["id"].(string)), true
 
 	case "User.id":
-		if e.complexity.User.ID == nil {
+		if e.complexity.User.Id == nil {
 			break
 		}
 
-		return e.complexity.User.ID(childComplexity), true
+		return e.complexity.User.Id(childComplexity), true
 
 	case "User.password":
 		if e.complexity.User.Password == nil {
@@ -259,6 +458,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.Username(childComplexity), true
+
+	case "Vulnerability.created":
+		if e.complexity.Vulnerability.Created == nil {
+			break
+		}
+
+		return e.complexity.Vulnerability.Created(childComplexity), true
+
+	case "Vulnerability.description":
+		if e.complexity.Vulnerability.Description == nil {
+			break
+		}
+
+		return e.complexity.Vulnerability.Description(childComplexity), true
+
+	case "Vulnerability.id":
+		if e.complexity.Vulnerability.ID == nil {
+			break
+		}
+
+		return e.complexity.Vulnerability.ID(childComplexity), true
+
+	case "Vulnerability.name":
+		if e.complexity.Vulnerability.Name == nil {
+			break
+		}
+
+		return e.complexity.Vulnerability.Name(childComplexity), true
+
+	case "Vulnerability.updated":
+		if e.complexity.Vulnerability.Updated == nil {
+			break
+		}
+
+		return e.complexity.Vulnerability.Updated(childComplexity), true
 
 	}
 	return 0, false
@@ -369,20 +603,132 @@ type Mutation {
   signIn(input: SignInUser!): AuthResponse!
   signUp(input: SignUpUser!): Message!
   refreshTokens(input: Refresh!): AuthResponse!
-  logout(input: Refresh!):Message!
+  logout(input: Refresh!): Message!
+  showTheProjectByID(id: Int!): Project!
+  createProject(input: CreateProject!): Project!
+  updateProject(id:Int!, input: UpdateProject!): Message!
+  deleteProject(id:Int!):Message!
+  showTheVulnerabilityByID(id: Int!): Vulnerability!
+  createVulnerability(input: CreateVulnerability!): Vulnerability!
+  updateVulnerability(id:Int!, input: UpdateVulnerability!): Message!
+  deleteVulnerability(id:Int!):Message!
 }
 
-type Auht {
+type Auth {
   id: ID!
   refToken: String!
   userId: ID!
-}`, BuiltIn: false},
+}
+
+type Project {
+  id: Int!
+  name: String!
+  shortDescription: String!
+  description: String!
+  private: Boolean!
+  closed: Boolean!
+  orgId: Int!
+  created: Time!
+  updated: Time!
+}
+
+input UpdateProject {
+  name: String
+  shortDescription: String
+  description: String
+}
+
+
+input CreateProject {
+  name: String!
+  shortDescription: String!
+  description: String!
+}
+
+type Vulnerability {
+  id: Int!
+  name: String!
+  description: String!
+  created: Time!
+  updated: Time!
+}
+
+input CreateVulnerability{
+  name: String!
+  description: String!
+}
+
+input UpdateVulnerability{
+  name: String
+  description: String
+}
+`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_createProject_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.CreateProject
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCreateProject2twoBinPJᚋappsᚋapi2ᚋgraphᚋmodelᚐCreateProject(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createVulnerability_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.CreateVulnerability
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCreateVulnerability2twoBinPJᚋappsᚋapi2ᚋgraphᚋmodelᚐCreateVulnerability(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteProject_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteVulnerability_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_logout_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -414,6 +760,36 @@ func (ec *executionContext) field_Mutation_refreshTokens_args(ctx context.Contex
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_showTheProjectByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_showTheVulnerabilityByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_signIn_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -441,6 +817,54 @@ func (ec *executionContext) field_Mutation_signUp_args(ctx context.Context, rawA
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateProject_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 model.UpdateProject
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNUpdateProject2twoBinPJᚋappsᚋapi2ᚋgraphᚋmodelᚐUpdateProject(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateVulnerability_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 model.UpdateVulnerability
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNUpdateVulnerability2twoBinPJᚋappsᚋapi2ᚋgraphᚋmodelᚐUpdateVulnerability(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
 	return args, nil
 }
 
@@ -512,7 +936,7 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _Auht_id(ctx context.Context, field graphql.CollectedField, obj *model.Auht) (ret graphql.Marshaler) {
+func (ec *executionContext) _Auth_id(ctx context.Context, field graphql.CollectedField, obj *auth.Auth) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -520,7 +944,7 @@ func (ec *executionContext) _Auht_id(ctx context.Context, field graphql.Collecte
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "Auht",
+		Object:     "Auth",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -547,7 +971,7 @@ func (ec *executionContext) _Auht_id(ctx context.Context, field graphql.Collecte
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Auht_refToken(ctx context.Context, field graphql.CollectedField, obj *model.Auht) (ret graphql.Marshaler) {
+func (ec *executionContext) _Auth_refToken(ctx context.Context, field graphql.CollectedField, obj *auth.Auth) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -555,7 +979,7 @@ func (ec *executionContext) _Auht_refToken(ctx context.Context, field graphql.Co
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "Auht",
+		Object:     "Auth",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -582,7 +1006,7 @@ func (ec *executionContext) _Auht_refToken(ctx context.Context, field graphql.Co
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Auht_userId(ctx context.Context, field graphql.CollectedField, obj *model.Auht) (ret graphql.Marshaler) {
+func (ec *executionContext) _Auth_userId(ctx context.Context, field graphql.CollectedField, obj *auth.Auth) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -590,7 +1014,7 @@ func (ec *executionContext) _Auht_userId(ctx context.Context, field graphql.Coll
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "Auht",
+		Object:     "Auth",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -647,9 +1071,9 @@ func (ec *executionContext) _AuthResponse_authTokens(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.AuthTokens)
+	res := resTmp.(*user.AuthTokens)
 	fc.Result = res
-	return ec.marshalNAuthTokens2ᚖtwoBinPJᚋappsᚋapi2ᚋgraphᚋmodelᚐAuthTokens(ctx, field.Selections, res)
+	return ec.marshalNAuthTokens2ᚖtwoBinPJᚋdomainsᚋuserᚐAuthTokens(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _AuthResponse_user(ctx context.Context, field graphql.CollectedField, obj *model.AuthResponse) (ret graphql.Marshaler) {
@@ -682,12 +1106,12 @@ func (ec *executionContext) _AuthResponse_user(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.User)
+	res := resTmp.(*user.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖtwoBinPJᚋappsᚋapi2ᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖtwoBinPJᚋdomainsᚋuserᚐUser(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _AuthTokens_accessToken(ctx context.Context, field graphql.CollectedField, obj *model.AuthTokens) (ret graphql.Marshaler) {
+func (ec *executionContext) _AuthTokens_accessToken(ctx context.Context, field graphql.CollectedField, obj *user.AuthTokens) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -722,7 +1146,7 @@ func (ec *executionContext) _AuthTokens_accessToken(ctx context.Context, field g
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _AuthTokens_refreshToken(ctx context.Context, field graphql.CollectedField, obj *model.AuthTokens) (ret graphql.Marshaler) {
+func (ec *executionContext) _AuthTokens_refreshToken(ctx context.Context, field graphql.CollectedField, obj *user.AuthTokens) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -757,7 +1181,7 @@ func (ec *executionContext) _AuthTokens_refreshToken(ctx context.Context, field 
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _AuthTokens_expiredAt(ctx context.Context, field graphql.CollectedField, obj *model.AuthTokens) (ret graphql.Marshaler) {
+func (ec *executionContext) _AuthTokens_expiredAt(ctx context.Context, field graphql.CollectedField, obj *user.AuthTokens) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -792,7 +1216,7 @@ func (ec *executionContext) _AuthTokens_expiredAt(ctx context.Context, field gra
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _AuthTokens_userId(ctx context.Context, field graphql.CollectedField, obj *model.AuthTokens) (ret graphql.Marshaler) {
+func (ec *executionContext) _AuthTokens_userId(ctx context.Context, field graphql.CollectedField, obj *user.AuthTokens) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1030,6 +1454,657 @@ func (ec *executionContext) _Mutation_logout(ctx context.Context, field graphql.
 	return ec.marshalNMessage2ᚖtwoBinPJᚋappsᚋapi2ᚋgraphᚋmodelᚐMessage(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_showTheProjectByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_showTheProjectByID_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ShowTheProjectByID(rctx, args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*project.Project)
+	fc.Result = res
+	return ec.marshalNProject2ᚖtwoBinPJᚋdomainsᚋprojectᚐProject(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createProject(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createProject_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateProject(rctx, args["input"].(model.CreateProject))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*project.Project)
+	fc.Result = res
+	return ec.marshalNProject2ᚖtwoBinPJᚋdomainsᚋprojectᚐProject(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateProject(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateProject_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateProject(rctx, args["id"].(int), args["input"].(model.UpdateProject))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Message)
+	fc.Result = res
+	return ec.marshalNMessage2ᚖtwoBinPJᚋappsᚋapi2ᚋgraphᚋmodelᚐMessage(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteProject(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteProject_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteProject(rctx, args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Message)
+	fc.Result = res
+	return ec.marshalNMessage2ᚖtwoBinPJᚋappsᚋapi2ᚋgraphᚋmodelᚐMessage(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_showTheVulnerabilityByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_showTheVulnerabilityByID_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ShowTheVulnerabilityByID(rctx, args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*vulnerability.Vulnerability)
+	fc.Result = res
+	return ec.marshalNVulnerability2ᚖtwoBinPJᚋdomainsᚋvulnerabilityᚐVulnerability(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createVulnerability(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createVulnerability_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateVulnerability(rctx, args["input"].(model.CreateVulnerability))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*vulnerability.Vulnerability)
+	fc.Result = res
+	return ec.marshalNVulnerability2ᚖtwoBinPJᚋdomainsᚋvulnerabilityᚐVulnerability(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateVulnerability(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateVulnerability_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateVulnerability(rctx, args["id"].(int), args["input"].(model.UpdateVulnerability))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Message)
+	fc.Result = res
+	return ec.marshalNMessage2ᚖtwoBinPJᚋappsᚋapi2ᚋgraphᚋmodelᚐMessage(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteVulnerability(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteVulnerability_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteVulnerability(rctx, args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Message)
+	fc.Result = res
+	return ec.marshalNMessage2ᚖtwoBinPJᚋappsᚋapi2ᚋgraphᚋmodelᚐMessage(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Project_id(ctx context.Context, field graphql.CollectedField, obj *project.Project) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Project",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Project_name(ctx context.Context, field graphql.CollectedField, obj *project.Project) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Project",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Project_shortDescription(ctx context.Context, field graphql.CollectedField, obj *project.Project) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Project",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ShortDescription, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Project_description(ctx context.Context, field graphql.CollectedField, obj *project.Project) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Project",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Project_private(ctx context.Context, field graphql.CollectedField, obj *project.Project) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Project",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Private, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Project_closed(ctx context.Context, field graphql.CollectedField, obj *project.Project) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Project",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Closed, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Project_orgId(ctx context.Context, field graphql.CollectedField, obj *project.Project) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Project",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.OrgID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Project_created(ctx context.Context, field graphql.CollectedField, obj *project.Project) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Project",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Created, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Project_updated(ctx context.Context, field graphql.CollectedField, obj *project.Project) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Project",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Updated, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_user(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1067,9 +2142,9 @@ func (ec *executionContext) _Query_user(ctx context.Context, field graphql.Colle
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.User)
+	res := resTmp.(*user.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖtwoBinPJᚋappsᚋapi2ᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖtwoBinPJᚋdomainsᚋuserᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1143,7 +2218,7 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *user.User) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1161,7 +2236,7 @@ func (ec *executionContext) _User_id(ctx context.Context, field graphql.Collecte
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
+		return obj.Id, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1178,7 +2253,7 @@ func (ec *executionContext) _User_id(ctx context.Context, field graphql.Collecte
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _User_username(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_username(ctx context.Context, field graphql.CollectedField, obj *user.User) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1213,7 +2288,7 @@ func (ec *executionContext) _User_username(ctx context.Context, field graphql.Co
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _User_password(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_password(ctx context.Context, field graphql.CollectedField, obj *user.User) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1246,6 +2321,181 @@ func (ec *executionContext) _User_password(ctx context.Context, field graphql.Co
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Vulnerability_id(ctx context.Context, field graphql.CollectedField, obj *vulnerability.Vulnerability) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Vulnerability",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Vulnerability_name(ctx context.Context, field graphql.CollectedField, obj *vulnerability.Vulnerability) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Vulnerability",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Vulnerability_description(ctx context.Context, field graphql.CollectedField, obj *vulnerability.Vulnerability) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Vulnerability",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Vulnerability_created(ctx context.Context, field graphql.CollectedField, obj *vulnerability.Vulnerability) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Vulnerability",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Created, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Vulnerability_updated(ctx context.Context, field graphql.CollectedField, obj *vulnerability.Vulnerability) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Vulnerability",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Updated, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -2335,6 +3585,70 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputCreateProject(ctx context.Context, obj interface{}) (model.CreateProject, error) {
+	var it model.CreateProject
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "shortDescription":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("shortDescription"))
+			it.ShortDescription, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "description":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			it.Description, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateVulnerability(ctx context.Context, obj interface{}) (model.CreateVulnerability, error) {
+	var it model.CreateVulnerability
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "description":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			it.Description, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputRefresh(ctx context.Context, obj interface{}) (model.Refresh, error) {
 	var it model.Refresh
 	var asMap = obj.(map[string]interface{})
@@ -2411,6 +3725,70 @@ func (ec *executionContext) unmarshalInputSignUpUser(ctx context.Context, obj in
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputUpdateProject(ctx context.Context, obj interface{}) (model.UpdateProject, error) {
+	var it model.UpdateProject
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "shortDescription":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("shortDescription"))
+			it.ShortDescription, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "description":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			it.Description, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateVulnerability(ctx context.Context, obj interface{}) (model.UpdateVulnerability, error) {
+	var it model.UpdateVulnerability
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "description":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			it.Description, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -2419,29 +3797,29 @@ func (ec *executionContext) unmarshalInputSignUpUser(ctx context.Context, obj in
 
 // region    **************************** object.gotpl ****************************
 
-var auhtImplementors = []string{"Auht"}
+var authImplementors = []string{"Auth"}
 
-func (ec *executionContext) _Auht(ctx context.Context, sel ast.SelectionSet, obj *model.Auht) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, auhtImplementors)
+func (ec *executionContext) _Auth(ctx context.Context, sel ast.SelectionSet, obj *auth.Auth) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, authImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("Auht")
+			out.Values[i] = graphql.MarshalString("Auth")
 		case "id":
-			out.Values[i] = ec._Auht_id(ctx, field, obj)
+			out.Values[i] = ec._Auth_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
 		case "refToken":
-			out.Values[i] = ec._Auht_refToken(ctx, field, obj)
+			out.Values[i] = ec._Auth_refToken(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
 		case "userId":
-			out.Values[i] = ec._Auht_userId(ctx, field, obj)
+			out.Values[i] = ec._Auth_userId(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2490,7 +3868,7 @@ func (ec *executionContext) _AuthResponse(ctx context.Context, sel ast.Selection
 
 var authTokensImplementors = []string{"AuthTokens"}
 
-func (ec *executionContext) _AuthTokens(ctx context.Context, sel ast.SelectionSet, obj *model.AuthTokens) graphql.Marshaler {
+func (ec *executionContext) _AuthTokens(ctx context.Context, sel ast.SelectionSet, obj *user.AuthTokens) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, authTokensImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -2592,6 +3970,113 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "showTheProjectByID":
+			out.Values[i] = ec._Mutation_showTheProjectByID(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createProject":
+			out.Values[i] = ec._Mutation_createProject(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateProject":
+			out.Values[i] = ec._Mutation_updateProject(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteProject":
+			out.Values[i] = ec._Mutation_deleteProject(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "showTheVulnerabilityByID":
+			out.Values[i] = ec._Mutation_showTheVulnerabilityByID(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createVulnerability":
+			out.Values[i] = ec._Mutation_createVulnerability(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateVulnerability":
+			out.Values[i] = ec._Mutation_updateVulnerability(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteVulnerability":
+			out.Values[i] = ec._Mutation_deleteVulnerability(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var projectImplementors = []string{"Project"}
+
+func (ec *executionContext) _Project(ctx context.Context, sel ast.SelectionSet, obj *project.Project) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, projectImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Project")
+		case "id":
+			out.Values[i] = ec._Project_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Project_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "shortDescription":
+			out.Values[i] = ec._Project_shortDescription(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "description":
+			out.Values[i] = ec._Project_description(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "private":
+			out.Values[i] = ec._Project_private(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "closed":
+			out.Values[i] = ec._Project_closed(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "orgId":
+			out.Values[i] = ec._Project_orgId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "created":
+			out.Values[i] = ec._Project_created(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updated":
+			out.Values[i] = ec._Project_updated(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2649,7 +4134,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 
 var userImplementors = []string{"User"}
 
-func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *model.User) graphql.Marshaler {
+func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *user.User) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, userImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -2670,6 +4155,53 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "password":
 			out.Values[i] = ec._User_password(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var vulnerabilityImplementors = []string{"Vulnerability"}
+
+func (ec *executionContext) _Vulnerability(ctx context.Context, sel ast.SelectionSet, obj *vulnerability.Vulnerability) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, vulnerabilityImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Vulnerability")
+		case "id":
+			out.Values[i] = ec._Vulnerability_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Vulnerability_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "description":
+			out.Values[i] = ec._Vulnerability_description(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "created":
+			out.Values[i] = ec._Vulnerability_created(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updated":
+			out.Values[i] = ec._Vulnerability_updated(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2943,7 +4475,7 @@ func (ec *executionContext) marshalNAuthResponse2ᚖtwoBinPJᚋappsᚋapi2ᚋgra
 	return ec._AuthResponse(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNAuthTokens2ᚖtwoBinPJᚋappsᚋapi2ᚋgraphᚋmodelᚐAuthTokens(ctx context.Context, sel ast.SelectionSet, v *model.AuthTokens) graphql.Marshaler {
+func (ec *executionContext) marshalNAuthTokens2ᚖtwoBinPJᚋdomainsᚋuserᚐAuthTokens(ctx context.Context, sel ast.SelectionSet, v *user.AuthTokens) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -2968,6 +4500,16 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) unmarshalNCreateProject2twoBinPJᚋappsᚋapi2ᚋgraphᚋmodelᚐCreateProject(ctx context.Context, v interface{}) (model.CreateProject, error) {
+	res, err := ec.unmarshalInputCreateProject(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNCreateVulnerability2twoBinPJᚋappsᚋapi2ᚋgraphᚋmodelᚐCreateVulnerability(ctx context.Context, v interface{}) (model.CreateVulnerability, error) {
+	res, err := ec.unmarshalInputCreateVulnerability(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -2975,6 +4517,21 @@ func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface
 
 func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
 	res := graphql.MarshalID(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalInt(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -2995,6 +4552,20 @@ func (ec *executionContext) marshalNMessage2ᚖtwoBinPJᚋappsᚋapi2ᚋgraphᚋ
 		return graphql.Null
 	}
 	return ec._Message(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNProject2twoBinPJᚋdomainsᚋprojectᚐProject(ctx context.Context, sel ast.SelectionSet, v project.Project) graphql.Marshaler {
+	return ec._Project(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNProject2ᚖtwoBinPJᚋdomainsᚋprojectᚐProject(ctx context.Context, sel ast.SelectionSet, v *project.Project) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Project(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNRefresh2twoBinPJᚋappsᚋapi2ᚋgraphᚋmodelᚐRefresh(ctx context.Context, v interface{}) (model.Refresh, error) {
@@ -3042,11 +4613,21 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) marshalNUser2twoBinPJᚋappsᚋapi2ᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
+func (ec *executionContext) unmarshalNUpdateProject2twoBinPJᚋappsᚋapi2ᚋgraphᚋmodelᚐUpdateProject(ctx context.Context, v interface{}) (model.UpdateProject, error) {
+	res, err := ec.unmarshalInputUpdateProject(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateVulnerability2twoBinPJᚋappsᚋapi2ᚋgraphᚋmodelᚐUpdateVulnerability(ctx context.Context, v interface{}) (model.UpdateVulnerability, error) {
+	res, err := ec.unmarshalInputUpdateVulnerability(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNUser2twoBinPJᚋdomainsᚋuserᚐUser(ctx context.Context, sel ast.SelectionSet, v user.User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNUser2ᚖtwoBinPJᚋappsᚋapi2ᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚖtwoBinPJᚋdomainsᚋuserᚐUser(ctx context.Context, sel ast.SelectionSet, v *user.User) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -3054,6 +4635,20 @@ func (ec *executionContext) marshalNUser2ᚖtwoBinPJᚋappsᚋapi2ᚋgraphᚋmod
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNVulnerability2twoBinPJᚋdomainsᚋvulnerabilityᚐVulnerability(ctx context.Context, sel ast.SelectionSet, v vulnerability.Vulnerability) graphql.Marshaler {
+	return ec._Vulnerability(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNVulnerability2ᚖtwoBinPJᚋdomainsᚋvulnerabilityᚐVulnerability(ctx context.Context, sel ast.SelectionSet, v *vulnerability.Vulnerability) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Vulnerability(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {

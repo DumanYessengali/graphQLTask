@@ -3,25 +3,23 @@
 package model
 
 import (
-	"time"
+	"twoBinPJ/domains/user"
 )
 
-type Auht struct {
-	ID       string `json:"id"`
-	RefToken string `json:"refToken"`
-	UserID   string `json:"userId"`
-}
-
 type AuthResponse struct {
-	AuthTokens *AuthTokens `json:"authTokens"`
-	User       *User       `json:"user"`
+	AuthTokens *user.AuthTokens `json:"authTokens"`
+	User       *user.User       `json:"user"`
 }
 
-type AuthTokens struct {
-	AccessToken  string    `json:"accessToken"`
-	RefreshToken string    `json:"refreshToken"`
-	ExpiredAt    time.Time `json:"expiredAt"`
-	UserID       string    `json:"userId"`
+type CreateProject struct {
+	Name             string `json:"name"`
+	ShortDescription string `json:"shortDescription"`
+	Description      string `json:"description"`
+}
+
+type CreateVulnerability struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 type Message struct {
@@ -42,8 +40,13 @@ type SignUpUser struct {
 	Password string `json:"password"`
 }
 
-type User struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-	Password string `json:"password"`
+type UpdateProject struct {
+	Name             *string `json:"name"`
+	ShortDescription *string `json:"shortDescription"`
+	Description      *string `json:"description"`
+}
+
+type UpdateVulnerability struct {
+	Name        *string `json:"name"`
+	Description *string `json:"description"`
 }
