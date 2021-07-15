@@ -60,3 +60,7 @@ models:
     model: twoBinPJ/domains/auth.Auth
   AuthTokens:
     model: twoBinPJ/domains/user.AuthTokens
+  Project:
+    model: twoBinPJ/domains/project.Project
+  Vulnerability:
+    model: twoBinPJ/domains/vulnerability.Vulnerability

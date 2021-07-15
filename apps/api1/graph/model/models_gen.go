@@ -11,6 +11,17 @@ type AuthResponse struct {
 	User       *user.User       `json:"user"`
 }
 
+type CreateProject struct {
+	Name             string `json:"name"`
+	ShortDescription string `json:"shortDescription"`
+	Description      string `json:"description"`
+}
+
+type CreateVulnerability struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
 type Message struct {
 	Message string `json:"message"`
 }
@@ -27,4 +38,15 @@ type SignInUser struct {
 type SignUpUser struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+}
+
+type UpdateProject struct {
+	Name             *string `json:"name"`
+	ShortDescription *string `json:"shortDescription"`
+	Description      *string `json:"description"`
+}
+
+type UpdateVulnerability struct {
+	Name        *string `json:"name"`
+	Description *string `json:"description"`
 }

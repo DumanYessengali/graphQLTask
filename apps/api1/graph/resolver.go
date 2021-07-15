@@ -2,7 +2,9 @@ package graph
 
 import (
 	"twoBinPJ/domains/auth"
+	"twoBinPJ/domains/project"
 	"twoBinPJ/domains/user"
+	"twoBinPJ/domains/vulnerability"
 )
 
 // This file will not be regenerated automatically.
@@ -12,6 +14,8 @@ import (
 //go:generate go run github.com/99designs/gqlgen
 
 type Resolver struct {
-	AuthModule auth.IAuthService
-	UserModule user.IUserService
+	AuthModule          auth.IAuthService
+	UserModule          user.IUserService
+	VulnerabilityModule vulnerability.IVulnerabilityService
+	ProjectModule       project.IProjectService
 }
