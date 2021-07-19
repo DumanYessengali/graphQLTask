@@ -1,11 +1,11 @@
 package auth
 
 import (
-	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"os"
 	"strconv"
 	"time"
+	"twoBinPJ/adapters"
 	"twoBinPJ/domains/user"
 )
 
@@ -16,14 +16,11 @@ type TokenDetails struct {
 	RtExpires    int64
 }
 
-const (
-	refreshTokens = "wfepiernfqenfreornfq"
-	accessTokens  = "fn3014jofp32rkmewnf53poflr"
-)
-
 func GenToken(userId string) (*user.AuthTokens, error) {
-	acTime, _ := strconv.ParseInt("9000000000000", 10, 64)
-	reTime, _ := strconv.ParseInt("86400000000000", 10, 64)
+	config := adapters.ParseConfig()
+
+	acTime, _ := strconv.ParseInt(config.AtExpires, 10, 64)
+	reTime, _ := strconv.ParseInt(config.RtExpires, 10, 64)
 	td := &TokenDetails{}
 
 	td.AtExpires = time.Now().Add(time.Duration(acTime)).Unix()
@@ -32,7 +29,7 @@ func GenToken(userId string) (*user.AuthTokens, error) {
 
 	var err error
 
-	os.Setenv("ACCESS_SECRET", accessTokens)
+	os.Setenv("ACCESS_SECRET", config.AccessTokenKey)
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
 		ExpiresAt: td.AtExpires,
@@ -44,9 +41,9 @@ func GenToken(userId string) (*user.AuthTokens, error) {
 		return nil, err
 	}
 
-	os.Setenv("REFRESH_SECRET", refreshTokens)
+	os.Setenv("REFRESH_SECRET", config.RefreshTokenKey)
 	token2 := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
-		ExpiresAt: td.AtExpires,
+		ExpiresAt: td.RtExpires,
 		Id:        userId,
 		IssuedAt:  time.Now().Unix(),
 	})
@@ -61,28 +58,4 @@ func GenToken(userId string) (*user.AuthTokens, error) {
 		ExpiredAt:    time.Now().Add(time.Duration(td.AtExpires)),
 		UserID:       userId,
 	}, nil
-}
-
-type tokenClaims struct {
-	jwt.StandardClaims
-	UserId int `json:"user_id"`
-}
-
-func ParseToken(accessToken string) (int, int64, error) {
-	token, err := jwt.ParseWithClaims(accessToken, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("INVALID_SIGNING_METHOD")
-		}
-
-		return []byte(accessTokens), nil
-	})
-	if err != nil {
-		return 0, 0, err
-	}
-
-	claims, ok := token.Claims.(*tokenClaims)
-	if !ok {
-		return 0, 0, errors.New("CLAIMING_TOKEN_ERROR")
-	}
-	return claims.UserId, claims.ExpiresAt, nil
 }

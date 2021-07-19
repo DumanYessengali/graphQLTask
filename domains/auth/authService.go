@@ -5,7 +5,6 @@ import (
 	"errors"
 	"log"
 	"twoBinPJ/domains/user"
-	"twoBinPJ/middleware"
 )
 
 type AuthService struct {
@@ -77,15 +76,15 @@ func (a *AuthService) SignUp(ctx context.Context, username, password string) (st
 }
 
 func (a *AuthService) RefreshTokens(ctx context.Context, refreshToken string) (*user.AuthTokens, *user.User, error) {
-	currentUser, err := middleware.GetCurrentUserFromCTX(ctx)
+	currentUser, err := user.ForContext(ctx)
 
 	if err != nil {
-		log.Printf("token is incorrect or wrong: %s", err)
+		log.Printf("token is incorrect or wrong1: %s", err)
 		return nil, nil, errors.New("INITIALIZING_TOKEN_ERROR")
 	}
 	checkToken, err := a.Repo.CheckTokenBeforeRefresh(currentUser.Id, refreshToken)
 	if err != nil {
-		log.Printf("token is incorrect or wrong: %s", err)
+		log.Printf("token is incorrect or wrong2: %s", err)
 		return nil, nil, errors.New("INITIALIZING_TOKEN_ERROR")
 	}
 	if checkToken {
@@ -107,7 +106,7 @@ func (a *AuthService) RefreshTokens(ctx context.Context, refreshToken string) (*
 }
 
 func (a *AuthService) Logout(ctx context.Context, refreshToken string) (string, error) {
-	currentUser, err := middleware.GetCurrentUserFromCTX(ctx)
+	currentUser, err := user.ForContext(ctx)
 
 	if err != nil {
 		log.Printf("token is incorrect or wrong: %s", err)

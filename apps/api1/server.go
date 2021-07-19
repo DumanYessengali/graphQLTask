@@ -45,7 +45,7 @@ func main() {
 	vulnerabilityModule := vulnerability.NewVulnerabilityModule(db)
 	projectModule := project.NewProjectModule(db)
 
-	router.Use(middleware.AuthMiddleware(user.UserRepository{DB: adapters.Db}))
+	router.Use(middleware.Middleware())
 	srv := handler.NewDefaultServer(generated1.NewExecutableSchema(generated1.Config{Resolvers: &graph1.Resolver{
 		AuthModule:          authModule,
 		UserModule:          userModule,

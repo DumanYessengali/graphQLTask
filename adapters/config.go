@@ -17,6 +17,8 @@ type ConfigStruct struct {
 	DataBasePassword string `yaml:"DataBasePassword"`
 	AtExpires        string `yaml:"AtExpires"`
 	RtExpires        string `yaml:"RtExpires"`
+	AccessTokenKey   string `yaml:"AccessTokenKey"`
+	RefreshTokenKey  string `yaml:"RefreshTokenKey"`
 }
 
 func (c *ConfigStruct) Parse(data []byte) error {
