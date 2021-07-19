@@ -13,6 +13,7 @@ import (
 	generated1 "twoBinPJ/apps/api1/graph/generated"
 	"twoBinPJ/domains/auth"
 	"twoBinPJ/domains/project"
+	"twoBinPJ/domains/report"
 	"twoBinPJ/domains/user"
 	"twoBinPJ/domains/vulnerability"
 	"twoBinPJ/middleware"
@@ -44,6 +45,7 @@ func main() {
 	userModule := user.NewUserModule(db)
 	vulnerabilityModule := vulnerability.NewVulnerabilityModule(db)
 	projectModule := project.NewProjectModule(db)
+	reportModule := report.NewReportModule(db)
 
 	router.Use(middleware.Middleware())
 	srv := handler.NewDefaultServer(generated1.NewExecutableSchema(generated1.Config{Resolvers: &graph1.Resolver{
@@ -51,6 +53,7 @@ func main() {
 		UserModule:          userModule,
 		VulnerabilityModule: vulnerabilityModule,
 		ProjectModule:       projectModule,
+		ReportModule:        *reportModule,
 	}}))
 
 	router.Handle("/", playground.Handler("GraphQL playground", "/query"))

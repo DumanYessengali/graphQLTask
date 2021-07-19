@@ -5,9 +5,11 @@ package graph
 
 import (
 	"context"
+	"fmt"
 	"twoBinPJ/apps/api1/graph/generated"
 	"twoBinPJ/apps/api1/graph/model"
 	"twoBinPJ/domains/project"
+	"twoBinPJ/domains/report"
 	"twoBinPJ/domains/user"
 	"twoBinPJ/domains/vulnerability"
 )
@@ -108,8 +110,32 @@ func (r *mutationResolver) DeleteVulnerability(ctx context.Context, id int) (*mo
 	return &model.Message{Message: "Vulnerability successfully deleted"}, nil
 }
 
+func (r *mutationResolver) ShowTheReportByID(ctx context.Context, id int) (*report.Report, error) {
+	return r.ReportModule.ShowTheReportByID(ctx, id)
+}
+
+func (r *mutationResolver) CreateReport(ctx context.Context, input model.CreateReport) (*report.Report, error) {
+	return r.ReportModule.CreateReportService(ctx, input.Name, input.Description, input.Comments, input.Seriousness, input.UnreadComments)
+}
+
+func (r *mutationResolver) UpdateReport(ctx context.Context, id int, input model.UpdateReport) (*model.Message, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) DeleteReport(ctx context.Context, id int) (*model.Message, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *queryResolver) User(ctx context.Context, id string) (*user.User, error) {
 	return r.UserModule.GetUserByIDService(id)
+}
+
+func (r *reportResolver) Status(ctx context.Context, obj *report.Report) (string, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *reportResolver) Seriousness(ctx context.Context, obj *report.Report) (string, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 // Mutation returns generated.MutationResolver implementation.
@@ -118,5 +144,9 @@ func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResol
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
+// Report returns generated.ReportResolver implementation.
+func (r *Resolver) Report() generated.ReportResolver { return &reportResolver{r} }
+
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type reportResolver struct{ *Resolver }

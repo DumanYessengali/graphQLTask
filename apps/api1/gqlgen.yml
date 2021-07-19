@@ -64,3 +64,5 @@ models:
     model: twoBinPJ/domains/project.Project
   Vulnerability:
     model: twoBinPJ/domains/vulnerability.Vulnerability
+  Report:
+    model: twoBinPJ/domains/report.Report

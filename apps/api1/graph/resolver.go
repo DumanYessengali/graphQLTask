@@ -3,6 +3,7 @@ package graph
 import (
 	"twoBinPJ/domains/auth"
 	"twoBinPJ/domains/project"
+	"twoBinPJ/domains/report"
 	"twoBinPJ/domains/user"
 	"twoBinPJ/domains/vulnerability"
 )
@@ -18,4 +19,5 @@ type Resolver struct {
 	UserModule          user.IUserService
 	VulnerabilityModule vulnerability.IVulnerabilityService
 	ProjectModule       project.IProjectService
+	ReportModule        report.ReportModule
 }

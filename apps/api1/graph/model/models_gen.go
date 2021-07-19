@@ -17,6 +17,14 @@ type CreateProject struct {
 	Description      string `json:"description"`
 }
 
+type CreateReport struct {
+	Name           string `json:"Name"`
+	Description    string `json:"Description"`
+	UnreadComments bool   `json:"UnreadComments"`
+	Comments       string `json:"Comments"`
+	Seriousness    string `json:"Seriousness"`
+}
+
 type CreateVulnerability struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
@@ -44,6 +52,14 @@ type UpdateProject struct {
 	Name             *string `json:"name"`
 	ShortDescription *string `json:"shortDescription"`
 	Description      *string `json:"description"`
+}
+
+type UpdateReport struct {
+	Name           *string `json:"Name"`
+	Description    *string `json:"Description"`
+	UnreadComments *bool   `json:"UnreadComments"`
+	Comments       *string `json:"Comments"`
+	Seriousness    *string `json:"Seriousness"`
 }
 
 type UpdateVulnerability struct {

@@ -52,6 +52,10 @@ type Mutation {
     createVulnerability(input: CreateVulnerability!): Vulnerability!
     updateVulnerability(id:Int!, input: UpdateVulnerability!): Message!
     deleteVulnerability(id:Int!):Message!
+    showTheReportByID(id: Int!): Report!
+    createReport(input: CreateReport!): Report!
+    updateReport(id:Int!, input: UpdateReport!): Message!
+    deleteReport(id:Int!):Message!
 }
 
 type Auth {
@@ -101,4 +105,42 @@ input CreateVulnerability{
 input UpdateVulnerability{
     name: String
     description: String
+}
+
+type Report {
+    Id:              Int!
+    Name:            String!
+    Description:     String!
+    Status:          String!
+    Seriousness:     String!
+    Archive:         Boolean!
+    Delete:          Boolean!
+    Reward:          Int!
+    Point:           Int!
+    ProjectId:       Int!
+    VulnerabilityId: Int!
+    UserId:          Int!
+    Assignee:        Int!
+    UnreadComments:  Boolean!
+    Comments:        String!
+    SentReportDate:  Time!
+    LastCommentTime: Time!
+    Created:         Time!
+    Updated:         Time!
+}
+
+input CreateReport {
+    Name:            String!
+    Description:     String!
+    UnreadComments:  Boolean!
+    Comments:        String!
+    Seriousness:     String!
+}
+
+input UpdateReport {
+    Name:            String
+    Description:     String
+    UnreadComments:  Boolean
+    Comments:        String
+    Seriousness:     String
 }
