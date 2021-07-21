@@ -1,3 +1,17 @@
+create table users
+(
+    id       serial primary key,
+    username varchar(255),
+    password varchar(255),
+    role     integer
+);
+
+create table auth
+(
+    id            serial primary key,
+    refresh_token varchar(255),
+    user_id       integer
+);
 
 create table vulnerability
 (

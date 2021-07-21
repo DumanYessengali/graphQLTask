@@ -79,12 +79,12 @@ func (a *AuthService) RefreshTokens(ctx context.Context, refreshToken string) (*
 	currentUser, err := user.ForContext(ctx)
 
 	if err != nil {
-		log.Printf("token is incorrect or wrong1: %s", err)
+		log.Printf("token is incorrect or wrong: %s", err)
 		return nil, nil, errors.New("INITIALIZING_TOKEN_ERROR")
 	}
 	checkToken, err := a.Repo.CheckTokenBeforeRefresh(currentUser.Id, refreshToken)
 	if err != nil {
-		log.Printf("token is incorrect or wrong2: %s", err)
+		log.Printf("token is incorrect or wrong: %s", err)
 		return nil, nil, errors.New("INITIALIZING_TOKEN_ERROR")
 	}
 	if checkToken {

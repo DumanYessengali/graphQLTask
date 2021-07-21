@@ -45,11 +45,11 @@ func (r *ReportRepository) GetReportByName(name string) (*Report, error) {
 	return r.GetReportByField("name", name)
 }
 
-func (r *ReportRepository) CreateReport(name, description, comments, seriousness string) (*Report, error) {
+func (r *ReportRepository) CreateReport(name, description, comments, seriousness string, userId string) (*Report, error) {
 	rows, err := r.DB.Query("insert into report(name, description, status, seriousness, archive, delete, reward, "+
 		"point, project_id,vulnerability_id, user_id, assignee, unread_comments, comments, sent_report_date, "+
 		"last_comment_time, created, updated) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) "+
-		"returning *", name, description, ReportStatusPending, seriousness, false, false, 1, 10, 1, 1, 1, 1, true, comments, time.Now(), time.Now(), time.Now(), time.Now())
+		"returning *", name, description, ReportStatusPending, seriousness, false, false, 1, 10, 1, 1, userId, 1, true, comments, time.Now(), time.Now(), time.Now(), time.Now())
 	if err != nil {
 		return nil, err
 	}

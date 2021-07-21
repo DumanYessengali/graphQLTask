@@ -32,8 +32,8 @@ type IProjectRepository interface {
 type IProjectService interface {
 	GetProjectByNameService(name string) (*Project, error)
 	CreateProjectService(ctx context.Context, name, shortDescription, description string) (*Project, error)
-	ShowTheProjectByID(ctx context.Context, id int) (*Project, error)
-	UpdateProject(project *Project, name, shortDescription, description *string) error
+	ShowTheProjectByID(id int) (*Project, error)
+	UpdateProject(ctx context.Context, project *Project, name, shortDescription, description *string) error
 	DeleteProject(ctx context.Context, id int) error
 }
 

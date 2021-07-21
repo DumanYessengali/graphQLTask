@@ -5,7 +5,9 @@ package graph
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log"
 	"twoBinPJ/apps/api1/graph/generated"
 	"twoBinPJ/apps/api1/graph/model"
 	"twoBinPJ/domains/project"
@@ -55,19 +57,28 @@ func (r *mutationResolver) Logout(ctx context.Context, input model.Refresh) (*mo
 }
 
 func (r *mutationResolver) ShowTheProjectByID(ctx context.Context, id int) (*project.Project, error) {
-	return r.ProjectModule.ShowTheProjectByID(ctx, id)
+	project, err := r.ProjectModule.ShowTheProjectByID(id)
+	if err != nil {
+		log.Printf("error while select project id: %s", err)
+		return nil, errors.New("INITIALIZING_ID_ERROR")
+	}
+	return project, nil
 }
 
 func (r *mutationResolver) CreateProject(ctx context.Context, input model.CreateProject) (*project.Project, error) {
-	return r.ProjectModule.CreateProjectService(ctx, input.Name, input.ShortDescription, input.Description)
-}
-
-func (r *mutationResolver) UpdateProject(ctx context.Context, id int, input model.UpdateProject) (*model.Message, error) {
-	project, err := r.ProjectModule.ShowTheProjectByID(ctx, id)
+	project, err := r.ProjectModule.CreateProjectService(ctx, input.Name, input.ShortDescription, input.Description)
 	if err != nil {
 		return nil, err
 	}
-	err = r.ProjectModule.UpdateProject(project, input.Name, input.ShortDescription, input.Description)
+	return project, nil
+}
+
+func (r *mutationResolver) UpdateProject(ctx context.Context, id int, input model.UpdateProject) (*model.Message, error) {
+	project, err := r.ProjectModule.ShowTheProjectByID(id)
+	if err != nil {
+		return nil, err
+	}
+	err = r.ProjectModule.UpdateProject(ctx, project, input.Name, input.ShortDescription, input.Description)
 	if err != nil {
 		return nil, err
 	}
@@ -83,11 +94,20 @@ func (r *mutationResolver) DeleteProject(ctx context.Context, id int) (*model.Me
 }
 
 func (r *mutationResolver) ShowTheVulnerabilityByID(ctx context.Context, id int) (*vulnerability.Vulnerability, error) {
-	return r.VulnerabilityModule.ShowVulnerabilityByID(ctx, id)
+	vulnerability, err := r.VulnerabilityModule.ShowVulnerabilityByID(ctx, id)
+	if err != nil {
+		log.Printf("error while select vulnerability id: %s", err)
+		return nil, errors.New("INITIALIZING_ID_ERROR")
+	}
+	return vulnerability, nil
 }
 
 func (r *mutationResolver) CreateVulnerability(ctx context.Context, input model.CreateVulnerability) (*vulnerability.Vulnerability, error) {
-	return r.VulnerabilityModule.CreateVulnerability(input.Name, input.Description)
+	vulnerability, err := r.VulnerabilityModule.CreateVulnerability(ctx, input.Name, input.Description)
+	if err != nil {
+		return nil, err
+	}
+	return vulnerability, nil
 }
 
 func (r *mutationResolver) UpdateVulnerability(ctx context.Context, id int, input model.UpdateVulnerability) (*model.Message, error) {
@@ -95,7 +115,7 @@ func (r *mutationResolver) UpdateVulnerability(ctx context.Context, id int, inpu
 	if err != nil {
 		return nil, err
 	}
-	err = r.VulnerabilityModule.UpdateVulnerability(input.Name, input.Description, vulnerability)
+	err = r.VulnerabilityModule.UpdateVulnerability(ctx, input.Name, input.Description, vulnerability)
 	if err != nil {
 		return nil, err
 	}
@@ -111,15 +131,24 @@ func (r *mutationResolver) DeleteVulnerability(ctx context.Context, id int) (*mo
 }
 
 func (r *mutationResolver) ShowTheReportByID(ctx context.Context, id int) (*report.Report, error) {
-	return r.ReportModule.ShowTheReportByID(ctx, id)
+	report, err := r.ReportModule.ShowTheReportByID(id)
+	if err != nil {
+		log.Printf("error while select report id: %s", err)
+		return nil, errors.New("INITIALIZING_ID_ERROR")
+	}
+	return report, nil
 }
 
 func (r *mutationResolver) CreateReport(ctx context.Context, input model.CreateReport) (*report.Report, error) {
-	return r.ReportModule.CreateReportService(ctx, input.Name, input.Description, input.Comments, input.Seriousness)
+	report, err := r.ReportModule.CreateReportService(ctx, input.Name, input.Description, input.Comments, input.Seriousness)
+	if err != nil {
+		return nil, err
+	}
+	return report, nil
 }
 
 func (r *mutationResolver) UpdateReport(ctx context.Context, id int, input model.UpdateReport) (*model.Message, error) {
-	report, err := r.ReportModule.ShowTheReportByID(ctx, id)
+	report, err := r.ReportModule.ShowTheReportByID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +168,11 @@ func (r *mutationResolver) DeleteReport(ctx context.Context, id int) (*model.Mes
 }
 
 func (r *queryResolver) User(ctx context.Context, id string) (*user.User, error) {
-	return r.UserModule.GetUserByIDService(id)
+	getUser, err := r.UserModule.GetUserByIDService(id)
+	if err != nil {
+		return nil, err
+	}
+	return getUser, nil
 }
 
 func (r *reportResolver) Status(ctx context.Context, obj *report.Report) (string, error) {
@@ -147,6 +180,10 @@ func (r *reportResolver) Status(ctx context.Context, obj *report.Report) (string
 }
 
 func (r *reportResolver) Seriousness(ctx context.Context, obj *report.Report) (string, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *userResolver) Role(ctx context.Context, obj *user.User) (int, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -159,6 +196,10 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 // Report returns generated.ReportResolver implementation.
 func (r *Resolver) Report() generated.ReportResolver { return &reportResolver{r} }
 
+// User returns generated.UserResolver implementation.
+func (r *Resolver) User() generated.UserResolver { return &userResolver{r} }
+
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type reportResolver struct{ *Resolver }
+type userResolver struct{ *Resolver }

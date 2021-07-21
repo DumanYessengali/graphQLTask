@@ -26,7 +26,16 @@ type User struct {
 	Id       string
 	Username string
 	Password string
+	Role     UserRoles
 }
+type UserRoles int
+
+const (
+	UserRolesUser      UserRoles = iota // 0
+	UserRolesModerator                  // 1
+	UserRolesAdmin                      // 2
+	UserRolesManager                    // 3
+)
 
 type AuthTokens struct {
 	AccessToken  string

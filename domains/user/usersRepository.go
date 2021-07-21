@@ -23,7 +23,7 @@ func (u *UserRepository) GetUserByField(field, value string) (*User, error) {
 
 	for row.Next() {
 		var u User
-		err = row.Scan(&u.Id, &u.Username, &u.Password)
+		err = row.Scan(&u.Id, &u.Username, &u.Password, &u.Role)
 
 		if err != nil {
 
@@ -47,7 +47,7 @@ func (u *UserRepository) GetUserIdByUsername(username string) (string, error) {
 	return user.Id, err
 }
 func (u *UserRepository) CreateUser(user *User) (*User, error) {
-	rows, err := u.DB.Query("insert into users(username, password) values($1,$2) returning *", user.Username, user.Password)
+	rows, err := u.DB.Query("insert into users(username, password,role) values($1,$2,$3) returning *", user.Username, user.Password, UserRolesUser)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (u *UserRepository) CreateUser(user *User) (*User, error) {
 	var mup *User
 	for rows.Next() {
 		var m User
-		err := rows.Scan(&m.Id, &m.Username, &m.Password)
+		err := rows.Scan(&m.Id, &m.Username, &m.Password, &m.Role)
 		if err != nil {
 			return nil, err
 		}
