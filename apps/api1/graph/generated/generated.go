@@ -909,7 +909,6 @@ type Report {
 input CreateReport {
     Name:            String!
     Description:     String!
-    UnreadComments:  Boolean!
     Comments:        String!
     Seriousness:     String!
 }
@@ -917,7 +916,6 @@ input CreateReport {
 input UpdateReport {
     Name:            String
     Description:     String
-    UnreadComments:  Boolean
     Comments:        String
     Seriousness:     String
 }
@@ -4804,14 +4802,6 @@ func (ec *executionContext) unmarshalInputCreateReport(ctx context.Context, obj 
 			if err != nil {
 				return it, err
 			}
-		case "UnreadComments":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("UnreadComments"))
-			it.UnreadComments, err = ec.unmarshalNBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "Comments":
 			var err error
 
@@ -4993,14 +4983,6 @@ func (ec *executionContext) unmarshalInputUpdateReport(ctx context.Context, obj 
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Description"))
 			it.Description, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "UnreadComments":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("UnreadComments"))
-			it.UnreadComments, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}

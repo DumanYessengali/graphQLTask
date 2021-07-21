@@ -56,13 +56,17 @@ type IReportRepository interface {
 	GetReportByID(id int) (*Report, error)
 	GetReportByField(field, value string) (*Report, error)
 	GetReportByName(name string) (*Report, error)
-	CreateReport(name, description, comments, seriousness string, unreadComments bool) (*Report, error)
+	CreateReport(name, description, comments, seriousness string) (*Report, error)
+	UpdateReport(name, description, comments, seriousness *string, id int, didUpdateComments bool) error
+	DeleteReport(id int) error
 }
 
 type IReportService interface {
 	GetReportByNameService(name string) (*Report, error)
 	ShowTheReportByID(ctx context.Context, id int) (*Report, error)
-	CreateReportService(ctx context.Context, name, description, comments, seriousness string, unreadComments bool) (*Report, error)
+	CreateReportService(ctx context.Context, name, description, comments, seriousness string) (*Report, error)
+	UpdateReport(name, description, comments, seriousness *string, report *Report, ctx context.Context) error
+	DeleteReport(ctx context.Context, id int) error
 }
 
 type ReportModule struct {

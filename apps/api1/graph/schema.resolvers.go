@@ -115,15 +115,27 @@ func (r *mutationResolver) ShowTheReportByID(ctx context.Context, id int) (*repo
 }
 
 func (r *mutationResolver) CreateReport(ctx context.Context, input model.CreateReport) (*report.Report, error) {
-	return r.ReportModule.CreateReportService(ctx, input.Name, input.Description, input.Comments, input.Seriousness, input.UnreadComments)
+	return r.ReportModule.CreateReportService(ctx, input.Name, input.Description, input.Comments, input.Seriousness)
 }
 
 func (r *mutationResolver) UpdateReport(ctx context.Context, id int, input model.UpdateReport) (*model.Message, error) {
-	panic(fmt.Errorf("not implemented"))
+	report, err := r.ReportModule.ShowTheReportByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	err = r.ReportModule.UpdateReport(input.Name, input.Description, input.Comments, input.Seriousness, report, ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &model.Message{Message: "Report successfully updated"}, nil
 }
 
 func (r *mutationResolver) DeleteReport(ctx context.Context, id int) (*model.Message, error) {
-	panic(fmt.Errorf("not implemented"))
+	err := r.ReportModule.DeleteReport(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return &model.Message{Message: "Report successfully deleted"}, nil
 }
 
 func (r *queryResolver) User(ctx context.Context, id string) (*user.User, error) {

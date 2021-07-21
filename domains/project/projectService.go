@@ -29,24 +29,28 @@ func (p *ProjectService) UpdateProject(project *Project, name, shortDescription,
 	didUpdateName := false
 	didUpdateShortDescription := false
 	didUpdateDescription := false
+
 	if len(*name) < 1 {
 		*name = project.Name
 		didUpdateName = true
-
 	}
+
 	if len(*shortDescription) < 1 {
 		*shortDescription = project.ShortDescription
 		didUpdateShortDescription = true
-
 	}
+
 	if len(*description) < 1 {
 		*description = project.Description
 		didUpdateDescription = true
 	}
+
 	if didUpdateName && didUpdateShortDescription && didUpdateDescription {
 		return errors.New("no update done")
 	}
+
 	err := p.Repository.UpdateProject(name, shortDescription, description, project.ID)
+
 	if err != nil {
 		return err
 	}
