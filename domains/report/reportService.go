@@ -3,16 +3,21 @@ package report
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"twoBinPJ/domains/user"
 )
 
 type ReportService struct {
-	Repository IReportRepository
+	Repository  IReportRepository
+	UserService user.IUserService
 }
 
-func NewReportService(repo IReportRepository) *ReportService {
-	return &ReportService{Repository: repo}
+func NewReportService(repo IReportRepository, userService *user.UserService) *ReportService {
+	return &ReportService{
+		Repository:  repo,
+		UserService: userService,
+	}
 }
 
 func (r *ReportService) GetReportByNameService(name string) (*Report, error) {
@@ -24,58 +29,74 @@ func (r *ReportService) ShowTheReportByID(id int) (*Report, error) {
 }
 
 func (r *ReportService) CreateReportService(ctx context.Context, name, description, comments, seriousness string) (*Report, error) {
-	user, err := user.ForContext(ctx)
+	users, err := user.ForContext(ctx)
 	if err != nil {
 		log.Printf("token is incorrect or wrong: %s", err)
 		return nil, errors.New("INITIALIZING_TOKEN_ERROR")
 	}
-	if user.Role != 1 {
+	currentUser, err := r.UserService.GetUserByIDService(users.Id)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	if currentUser.Role != 1 {
 		log.Printf("You do not have access to create report: %s", err)
 		return nil, errors.New("CREATE_REPORT_ERROR")
 	}
-	return r.Repository.CreateReport(name, description, comments, seriousness, user.Id)
+	return r.Repository.CreateReport(name, description, comments, seriousness, currentUser.Id)
 }
 
 func (r *ReportService) UpdateReport(name, description, comments, seriousness *string, report *Report, ctx context.Context) error {
-	user, err := user.ForContext(ctx)
+	users, err := user.ForContext(ctx)
 	if err != nil {
 		log.Printf("token is incorrect or wrong: %s", err)
 		return errors.New("INITIALIZING_TOKEN_ERROR")
 	}
-	if user.Role != 1 {
+	currentUser, err := r.UserService.GetUserByIDService(users.Id)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	if currentUser.Role != 1 {
 		log.Printf("You do not have access to update report: %s", err)
 		return errors.New("UPDATE_REPORT_ERROR")
 	}
-	didUpdateName := false
-	didUpdateDescription := false
+	didUpdate := false
 	didUpdateComments := false
-	didUpdateSeriousness := false
-
-	if len(*name) < 1 {
-		*name = report.Name
-		didUpdateName = true
+	if name == nil {
+		report.Name = report.Name
+	} else {
+		report.Name = *name
+		didUpdate = true
 	}
 
-	if len(*description) < 1 {
-		*description = report.Description
-		didUpdateDescription = true
+	if description == nil {
+		report.Description = report.Description
+	} else {
+		report.Description = *description
+		didUpdate = true
 	}
 
-	if len(*comments) < 1 {
-		*comments = report.Comments
+	if comments == nil {
+		report.Comments = report.Comments
+	} else {
+		report.Comments = *comments
+		didUpdate = true
 		didUpdateComments = true
 	}
 
-	if len(*seriousness) < 1 {
-		*seriousness = string(report.Seriousness)
-		didUpdateSeriousness = true
+	if seriousness == nil {
+		report.Seriousness = report.Seriousness
+	} else {
+		report.Seriousness = ReportSeriousness(*seriousness)
+		didUpdate = true
 	}
 
-	if didUpdateName && didUpdateDescription && didUpdateComments && didUpdateSeriousness {
+	if !didUpdate {
 		return errors.New("no update done")
 	}
 
-	err = r.Repository.UpdateReport(name, description, comments, seriousness, report.ID, didUpdateComments)
+	err = r.Repository.UpdateReport(report.Name, report.Description, report.Comments, string(report.Seriousness), report.ID, didUpdateComments)
 
 	if err != nil {
 		return err
@@ -84,12 +105,17 @@ func (r *ReportService) UpdateReport(name, description, comments, seriousness *s
 }
 
 func (r *ReportService) DeleteReport(ctx context.Context, id int) error {
-	user, err := user.ForContext(ctx)
+	users, err := user.ForContext(ctx)
 	if err != nil {
 		log.Printf("token is incorrect or wrong: %s", err)
 		return errors.New("INITIALIZING_TOKEN_ERROR")
 	}
-	if user.Role != 1 {
+	currentUser, err := r.UserService.GetUserByIDService(users.Id)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	if currentUser.Role != 1 {
 		log.Printf("You do not have access to delete report: %s", err)
 		return errors.New("DELETE_REPORT_ERROR")
 	}

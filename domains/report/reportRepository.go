@@ -46,6 +46,7 @@ func (r *ReportRepository) GetReportByName(name string) (*Report, error) {
 }
 
 func (r *ReportRepository) CreateReport(name, description, comments, seriousness string, userId string) (*Report, error) {
+	fmt.Println(ReportStatusPending)
 	rows, err := r.DB.Query("insert into report(name, description, status, seriousness, archive, delete, reward, "+
 		"point, project_id,vulnerability_id, user_id, assignee, unread_comments, comments, sent_report_date, "+
 		"last_comment_time, created, updated) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) "+
@@ -67,7 +68,7 @@ func (r *ReportRepository) CreateReport(name, description, comments, seriousness
 	return report, nil
 }
 
-func (r *ReportRepository) UpdateReport(name, description, comments, seriousness *string, id int, didUpdateComments bool) error {
+func (r *ReportRepository) UpdateReport(name, description, comments, seriousness string, id int, didUpdateComments bool) error {
 	var err error
 	if didUpdateComments {
 		_, err = r.DB.Query("update report set name=$1, description=$2,comments=$3,seriousness=$4,updated=$5 where id=$6",

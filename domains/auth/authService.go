@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"twoBinPJ/domains/user"
 )
@@ -107,7 +108,7 @@ func (a *AuthService) RefreshTokens(ctx context.Context, refreshToken string) (*
 
 func (a *AuthService) Logout(ctx context.Context, refreshToken string) (string, error) {
 	currentUser, err := user.ForContext(ctx)
-
+	fmt.Println(currentUser.Id, currentUser.Username, currentUser.Role, currentUser.Password)
 	if err != nil {
 		log.Printf("token is incorrect or wrong: %s", err)
 		return "", errors.New("INITIALIZING_TOKEN_ERROR")

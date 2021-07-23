@@ -143,3 +143,10 @@ input UpdateReport {
     Comments:        String
     Seriousness:     String
 }
+
+type levelAchievements {
+    id: ID!
+    userId: Int!
+    levelAchievementsId: Int!
+    created: Time!
+}

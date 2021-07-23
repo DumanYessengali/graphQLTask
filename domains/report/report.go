@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/jmoiron/sqlx"
 	"time"
+	"twoBinPJ/domains/user"
 )
 
 type Report struct {
@@ -57,7 +58,7 @@ type IReportRepository interface {
 	GetReportByField(field, value string) (*Report, error)
 	GetReportByName(name string) (*Report, error)
 	CreateReport(name, description, comments, seriousness string, userId string) (*Report, error)
-	UpdateReport(name, description, comments, seriousness *string, id int, didUpdateComments bool) error
+	UpdateReport(name, description, comments, seriousness string, id int, didUpdateComments bool) error
 	DeleteReport(id int) error
 }
 
@@ -75,7 +76,9 @@ type ReportModule struct {
 
 func NewReportModule(Db *sqlx.DB) *ReportModule {
 	reportRepository := NewReportRepository(Db)
+	userRepository := user.NewUserPostgres(Db)
+	userService := user.NewUserService(userRepository)
 	return &ReportModule{
-		IReportService: NewReportService(reportRepository),
+		IReportService: NewReportService(reportRepository, userService),
 	}
 }

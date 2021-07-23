@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/jmoiron/sqlx"
 	"time"
+	"twoBinPJ/domains/user"
 )
 
 type Project struct {
@@ -42,8 +43,10 @@ type ProjectModule struct {
 }
 
 func NewProjectModule(Db *sqlx.DB) *ProjectModule {
-	userRepository := NewProjectRepository(Db)
+	userRepository := user.NewUserPostgres(Db)
+	userService := user.NewUserService(userRepository)
+	projectRepository := NewProjectRepository(Db)
 	return &ProjectModule{
-		IProjectService: NewProjectService(userRepository),
+		IProjectService: NewProjectService(projectRepository, userService),
 	}
 }

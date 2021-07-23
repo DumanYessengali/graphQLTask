@@ -3,16 +3,21 @@ package project
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"twoBinPJ/domains/user"
 )
 
 type ProjectService struct {
-	Repository IProjectRepository
+	Repository  IProjectRepository
+	UserService user.IUserService
 }
 
-func NewProjectService(repository IProjectRepository) *ProjectService {
-	return &ProjectService{Repository: repository}
+func NewProjectService(repository IProjectRepository, userService *user.UserService) *ProjectService {
+	return &ProjectService{
+		Repository:  repository,
+		UserService: userService,
+	}
 }
 
 func (p *ProjectService) GetProjectByNameService(name string) (*Project, error) {
@@ -20,12 +25,17 @@ func (p *ProjectService) GetProjectByNameService(name string) (*Project, error) 
 }
 
 func (p *ProjectService) CreateProjectService(ctx context.Context, name, shortDescription, description string) (*Project, error) {
-	user, err := user.ForContext(ctx)
+	users, err := user.ForContext(ctx)
 	if err != nil {
 		log.Printf("token is incorrect or wrong: %s", err)
 		return nil, errors.New("INITIALIZING_TOKEN_ERROR")
 	}
-	if user.Role != 2 {
+	currentUser, err := p.UserService.GetUserByIDService(users.Id)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	if currentUser.Role != 2 {
 		log.Printf("You do not have access to create project: %s", err)
 		return nil, errors.New("CREATE_PROJECT_ERROR")
 	}
@@ -37,35 +47,43 @@ func (p *ProjectService) ShowTheProjectByID(id int) (*Project, error) {
 }
 
 func (p *ProjectService) UpdateProject(ctx context.Context, project *Project, name, shortDescription, description *string) error {
-	user, err := user.ForContext(ctx)
+	users, err := user.ForContext(ctx)
 	if err != nil {
 		log.Printf("token is incorrect or wrong: %s", err)
 		return errors.New("INITIALIZING_TOKEN_ERROR")
 	}
-	if user.Role != 2 {
+	currentUser, err := p.UserService.GetUserByIDService(users.Id)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	if currentUser.Role != 2 {
 		log.Printf("You do not have access to update project: %s", err)
 		return errors.New("UPDATE_PROJECT_ERROR")
 	}
-	didUpdateName := false
-	didUpdateShortDescription := false
-	didUpdateDescription := false
-
-	if len(*name) < 1 {
-		*name = project.Name
-		didUpdateName = true
+	didUpdate := false
+	if name == nil {
+		project.Name = project.Name
+	} else {
+		project.Name = *name
+		didUpdate = true
 	}
 
-	if len(*shortDescription) < 1 {
-		*shortDescription = project.ShortDescription
-		didUpdateShortDescription = true
+	if shortDescription == nil {
+		project.ShortDescription = project.ShortDescription
+	} else {
+		project.ShortDescription = *shortDescription
+		didUpdate = true
 	}
 
-	if len(*description) < 1 {
-		*description = project.Description
-		didUpdateDescription = true
+	if description == nil {
+		project.Description = project.Description
+	} else {
+		project.Description = *description
+		didUpdate = true
 	}
 
-	if didUpdateName && didUpdateShortDescription && didUpdateDescription {
+	if !didUpdate {
 		return errors.New("no update done")
 	}
 
@@ -78,12 +96,17 @@ func (p *ProjectService) UpdateProject(ctx context.Context, project *Project, na
 }
 
 func (p *ProjectService) DeleteProject(ctx context.Context, id int) error {
-	user, err := user.ForContext(ctx)
+	users, err := user.ForContext(ctx)
 	if err != nil {
 		log.Printf("token is incorrect or wrong: %s", err)
 		return errors.New("INITIALIZING_TOKEN_ERROR")
 	}
-	if user.Role != 2 {
+	currentUser, err := p.UserService.GetUserByIDService(users.Id)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	if currentUser.Role != 2 {
 		log.Printf("You do not have access to delete project: %s", err)
 		return errors.New("DELETE_PROJECT_ERROR")
 	}
