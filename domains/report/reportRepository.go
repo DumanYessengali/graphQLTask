@@ -1,6 +1,7 @@
 package report
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"strconv"
@@ -15,9 +16,9 @@ func NewReportRepository(Db *sqlx.DB) *ReportRepository {
 	return &ReportRepository{DB: Db}
 }
 
-func (p *ReportRepository) GetReportByField(field, value string) (*Report, error) {
+func (r *ReportRepository) GetReportByField(field, value string) (*Report, error) {
 	var report *Report
-	row, err := p.DB.Query(fmt.Sprintf("select*from report where %v=$1", field), value)
+	row, err := r.DB.Query(fmt.Sprintf("select*from report where %v=$1", field), value)
 	if err != nil {
 		return nil, err
 	}
@@ -87,4 +88,72 @@ func (r *ReportRepository) DeleteReport(id int) error {
 		return err
 	}
 	return nil
+}
+
+func (r *ReportRepository) SelectReportByStatus(status string) ([]*Report, error) {
+	var report []*Report
+	row, err := r.DB.Query("select*from report where status=$1", status)
+	if err != nil {
+		return nil, err
+	}
+
+	for row.Next() {
+		var r Report
+		err = row.Scan(&r.ID, &r.Name, &r.Description, &r.Status, &r.Seriousness, &r.Archive, &r.Delete, &r.Reward,
+			&r.Point, &r.ProjectID, &r.VulnerabilityID, &r.UserID, &r.Assignee, &r.UnreadComments, &r.Comments,
+			&r.SentReportDate, &r.LastCommentTime, &r.Created, &r.Updated)
+
+		if err != nil {
+			return nil, err
+		}
+
+		report = append(report, &r)
+	}
+	return report, nil
+}
+
+func (r *ReportRepository) UpdateReportStatus(user_id, point, report_id int, reportStatus string) (*Report, error) {
+	var row *sql.Rows
+	var err error
+
+	if reportStatus == string(ReportStatusConfirm) {
+		_, err = r.DB.Query("update users set point = point+$1 where id=$2", point, user_id)
+		if err != nil {
+			return nil, err
+		}
+		_, err = r.DB.Query("update report set status = $1 where id=$2", reportStatus, report_id)
+		if err != nil {
+			return nil, err
+		}
+		row, err = r.DB.Query("select*from report where id=$1", report_id)
+		if err != nil {
+			return nil, err
+		}
+
+	} else {
+		_, err = r.DB.Query("update report set status = $1 where id=$2", reportStatus, report_id)
+		if err != nil {
+			return nil, err
+		}
+		row, err = r.DB.Query("select*from report where id=$1", report_id)
+		if err != nil {
+			return nil, err
+		}
+	}
+	var report *Report
+
+	for row.Next() {
+		var r Report
+		err = row.Scan(&r.ID, &r.Name, &r.Description, &r.Status, &r.Seriousness, &r.Archive, &r.Delete, &r.Reward,
+			&r.Point, &r.ProjectID, &r.VulnerabilityID, &r.UserID, &r.Assignee, &r.UnreadComments, &r.Comments,
+			&r.SentReportDate, &r.LastCommentTime, &r.Created, &r.Updated)
+
+		if err != nil {
+			return nil, err
+		}
+
+		report = &r
+	}
+	return report, nil
+
 }

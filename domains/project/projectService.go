@@ -3,7 +3,6 @@ package project
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"twoBinPJ/domains/user"
 )
@@ -32,7 +31,7 @@ func (p *ProjectService) CreateProjectService(ctx context.Context, name, shortDe
 	}
 	currentUser, err := p.UserService.GetUserByIDService(users.Id)
 	if err != nil {
-		fmt.Println(err)
+		log.Printf("error while initializing user error")
 		return nil, err
 	}
 	if currentUser.Role != 2 {
@@ -54,7 +53,7 @@ func (p *ProjectService) UpdateProject(ctx context.Context, project *Project, na
 	}
 	currentUser, err := p.UserService.GetUserByIDService(users.Id)
 	if err != nil {
-		fmt.Println(err)
+		log.Printf("error while initializing user error")
 		return err
 	}
 	if currentUser.Role != 2 {
@@ -103,7 +102,7 @@ func (p *ProjectService) DeleteProject(ctx context.Context, id int) error {
 	}
 	currentUser, err := p.UserService.GetUserByIDService(users.Id)
 	if err != nil {
-		fmt.Println(err)
+		log.Printf("error while initializing user error")
 		return err
 	}
 	if currentUser.Role != 2 {

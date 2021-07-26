@@ -19,5 +19,5 @@ type Resolver struct {
 	UserModule          user.IUserService
 	VulnerabilityModule vulnerability.IVulnerabilityService
 	ProjectModule       project.IProjectService
-	ReportModule        report.ReportModule
+	ReportModule        report.IReportService
 }

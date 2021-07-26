@@ -38,6 +38,10 @@ type Refresh struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
+type ReportStatus struct {
+	Status string `json:"Status"`
+}
+
 type SignInUser struct {
 	Username string `json:"username"`
 	Password string `json:"password"`

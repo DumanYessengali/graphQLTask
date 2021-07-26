@@ -3,7 +3,6 @@ package report
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"twoBinPJ/domains/user"
 )
@@ -36,7 +35,7 @@ func (r *ReportService) CreateReportService(ctx context.Context, name, descripti
 	}
 	currentUser, err := r.UserService.GetUserByIDService(users.Id)
 	if err != nil {
-		fmt.Println(err)
+		log.Printf("error while initializing user error")
 		return nil, err
 	}
 	if currentUser.Role != 1 {
@@ -54,7 +53,7 @@ func (r *ReportService) UpdateReport(name, description, comments, seriousness *s
 	}
 	currentUser, err := r.UserService.GetUserByIDService(users.Id)
 	if err != nil {
-		fmt.Println(err)
+		log.Printf("error while initializing user error")
 		return err
 	}
 	if currentUser.Role != 1 {
@@ -112,7 +111,7 @@ func (r *ReportService) DeleteReport(ctx context.Context, id int) error {
 	}
 	currentUser, err := r.UserService.GetUserByIDService(users.Id)
 	if err != nil {
-		fmt.Println(err)
+		log.Printf("error while initializing user error")
 		return err
 	}
 	if currentUser.Role != 1 {
@@ -120,4 +119,54 @@ func (r *ReportService) DeleteReport(ctx context.Context, id int) error {
 		return errors.New("DELETE_REPORT_ERROR")
 	}
 	return r.Repository.DeleteReport(id)
+}
+
+func (r *ReportService) ShowAllReportByStatus(ctx context.Context, status string) ([]*Report, error) {
+	users, err := user.ForContext(ctx)
+	if err != nil {
+		log.Printf("token is incorrect or wrong: %s", err)
+		return nil, errors.New("INITIALIZING_TOKEN_ERROR")
+	}
+	currentUser, err := r.UserService.GetUserByIDService(users.Id)
+	if err != nil {
+		log.Printf("error while initializing user error")
+		return nil, err
+	}
+	if currentUser.Role != 2 {
+		log.Printf("user do not have access to show report by status: %s", err)
+		return nil, errors.New("ACCESS_INITIALIZING_ERROR")
+	}
+	return r.Repository.SelectReportByStatus(status)
+}
+
+func (r *ReportService) VerifyReport(ctx context.Context, id int, reportStatus string) (*Report, error) {
+	users, err := user.ForContext(ctx)
+	if err != nil {
+		log.Printf("token is incorrect or wrong: %s", err)
+		return nil, errors.New("INITIALIZING_TOKEN_ERROR")
+	}
+	currentUser, err := r.UserService.GetUserByIDService(users.Id)
+	if err != nil {
+		log.Printf("error while initializing user error")
+		return nil, err
+	}
+	if currentUser.Role != 2 {
+		log.Printf("user do not have access to show report by status: %s", err)
+		return nil, errors.New("ACCESS_INITIALIZING_ERROR")
+	}
+	reportWhichWantToChange, err := r.Repository.GetReportByID(id)
+	if err != nil {
+		log.Printf("error while initializing report: %s", err)
+		return nil, errors.New("INITIALIZING_REPORT_ERROR")
+	}
+	if reportWhichWantToChange.Status != ReportStatusConfirm {
+		verifiedReport, err := r.Repository.UpdateReportStatus(reportWhichWantToChange.UserID, reportWhichWantToChange.Point, id, reportStatus)
+		if err != nil {
+			log.Printf("error while updating report: %s", err)
+			return nil, errors.New("UPDATING_REPORT_ERROR")
+		}
+		return verifiedReport, nil
+	}
+
+	return nil, errors.New("UPDATING_REPORT_ERROR")
 }

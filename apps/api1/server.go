@@ -53,7 +53,7 @@ func main() {
 		UserModule:          userModule,
 		VulnerabilityModule: vulnerabilityModule,
 		ProjectModule:       projectModule,
-		ReportModule:        *reportModule,
+		ReportModule:        reportModule,
 	}}))
 
 	router.Handle("/", playground.Handler("GraphQL playground", "/query"))

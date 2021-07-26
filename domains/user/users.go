@@ -27,6 +27,7 @@ type User struct {
 	Username string
 	Password string
 	Role     UserRoles
+	Point    int
 }
 type UserRoles int
 

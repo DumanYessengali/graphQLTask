@@ -3,6 +3,7 @@ type User {
     username: String!
     password: String!
     role: Int!
+    point: Int!
 }
 
 scalar Time
@@ -38,25 +39,6 @@ type Message {
 }
 input Refresh{
     refreshToken: String!
-}
-
-type Mutation {
-    signIn(input: SignInUser!): AuthResponse!
-    signUp(input: SignUpUser!): Message!
-    refreshTokens(input: Refresh!): AuthResponse!
-    logout(input: Refresh!): Message!
-    showTheProjectByID(id: Int!): Project!
-    createProject(input: CreateProject!): Project!
-    updateProject(id:Int!, input: UpdateProject!): Message!
-    deleteProject(id:Int!):Message!
-    showTheVulnerabilityByID(id: Int!): Vulnerability!
-    createVulnerability(input: CreateVulnerability!): Vulnerability!
-    updateVulnerability(id:Int!, input: UpdateVulnerability!): Message!
-    deleteVulnerability(id:Int!):Message!
-    showTheReportByID(id: Int!): Report!
-    createReport(input: CreateReport!): Report!
-    updateReport(id:Int!, input: UpdateReport!): Message!
-    deleteReport(id:Int!):Message!
 }
 
 type Auth {
@@ -149,4 +131,29 @@ type levelAchievements {
     userId: Int!
     levelAchievementsId: Int!
     created: Time!
+}
+
+input ReportStatus{
+    Status: String!
+}
+
+type Mutation {
+    signIn(input: SignInUser!): AuthResponse!
+    signUp(input: SignUpUser!): Message!
+    refreshTokens(input: Refresh!): AuthResponse!
+    logout(input: Refresh!): Message!
+    showTheProjectByID(id: Int!): Project!
+    createProject(input: CreateProject!): Project!
+    updateProject(id:Int!, input: UpdateProject!): Message!
+    deleteProject(id:Int!):Message!
+    showTheVulnerabilityByID(id: Int!): Vulnerability!
+    createVulnerability(input: CreateVulnerability!): Vulnerability!
+    updateVulnerability(id:Int!, input: UpdateVulnerability!): Message!
+    deleteVulnerability(id:Int!):Message!
+    showTheReportByID(id: Int!): Report!
+    createReport(input: CreateReport!): Report!
+    updateReport(id:Int!, input: UpdateReport!): Message!
+    deleteReport(id:Int!):Message!
+    showAllReportByStatus(input:ReportStatus!):[Report]!
+    verifyReport(id:Int!, input: ReportStatus!):Report!
 }

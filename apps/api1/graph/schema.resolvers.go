@@ -6,7 +6,6 @@ package graph
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"twoBinPJ/apps/api1/graph/generated"
 	"twoBinPJ/apps/api1/graph/model"
@@ -167,6 +166,24 @@ func (r *mutationResolver) DeleteReport(ctx context.Context, id int) (*model.Mes
 	return &model.Message{Message: "Report successfully deleted"}, nil
 }
 
+func (r *mutationResolver) ShowAllReportByStatus(ctx context.Context, input model.ReportStatus) ([]*report.Report, error) {
+	reportsByStatus, err := r.ReportModule.ShowAllReportByStatus(ctx, input.Status)
+	if err != nil {
+		return nil, err
+	}
+	return reportsByStatus, nil
+}
+
+func (r *mutationResolver) VerifyReport(ctx context.Context, id int, input model.ReportStatus) (*report.Report, error) {
+	report, err := r.ReportModule.VerifyReport(ctx, id, string(input.Status))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return report, nil
+}
+
 func (r *queryResolver) User(ctx context.Context, id string) (*user.User, error) {
 	getUser, err := r.UserModule.GetUserByIDService(id)
 	if err != nil {
@@ -176,15 +193,15 @@ func (r *queryResolver) User(ctx context.Context, id string) (*user.User, error)
 }
 
 func (r *reportResolver) Status(ctx context.Context, obj *report.Report) (string, error) {
-	panic(fmt.Errorf("not implemented"))
+	return string(obj.Status), nil
 }
 
 func (r *reportResolver) Seriousness(ctx context.Context, obj *report.Report) (string, error) {
-	panic(fmt.Errorf("not implemented"))
+	return string(obj.Seriousness), nil
 }
 
 func (r *userResolver) Role(ctx context.Context, obj *user.User) (int, error) {
-	panic(fmt.Errorf("not implemented"))
+	return int(obj.Role), nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

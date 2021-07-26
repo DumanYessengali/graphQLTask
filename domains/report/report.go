@@ -60,14 +60,18 @@ type IReportRepository interface {
 	CreateReport(name, description, comments, seriousness string, userId string) (*Report, error)
 	UpdateReport(name, description, comments, seriousness string, id int, didUpdateComments bool) error
 	DeleteReport(id int) error
+	SelectReportByStatus(status string) ([]*Report, error)
+	UpdateReportStatus(user_id, point, report_id int, reportStauts string) (*Report, error)
 }
 
 type IReportService interface {
+	ShowAllReportByStatus(ctx context.Context, status string) ([]*Report, error)
 	GetReportByNameService(name string) (*Report, error)
 	ShowTheReportByID(id int) (*Report, error)
 	CreateReportService(ctx context.Context, name, description, comments, seriousness string) (*Report, error)
 	UpdateReport(name, description, comments, seriousness *string, report *Report, ctx context.Context) error
 	DeleteReport(ctx context.Context, id int) error
+	VerifyReport(ctx context.Context, id int, report string) (*Report, error)
 }
 
 type ReportModule struct {
