@@ -3,7 +3,8 @@ create table users
     id       serial primary key,
     username varchar(255),
     password varchar(255),
-    role     integer
+    role     integer,
+    point    integer
 );
 
 create table auth
@@ -91,5 +92,5 @@ create table user_achievements
     id                    serial primary key,
     user_id               integer,
     level_achievements_id integer,
-    created     TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+    created               TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
