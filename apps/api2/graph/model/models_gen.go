@@ -3,6 +3,7 @@
 package model
 
 import (
+	"time"
 	"twoBinPJ/domains/user"
 )
 
@@ -37,6 +38,10 @@ type Refresh struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
+type ReportStatus struct {
+	Status string `json:"Status"`
+}
+
 type SignInUser struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -63,4 +68,11 @@ type UpdateReport struct {
 type UpdateVulnerability struct {
 	Name        *string `json:"name"`
 	Description *string `json:"description"`
+}
+
+type LevelAchievements struct {
+	ID                  string    `json:"id"`
+	UserID              int       `json:"userId"`
+	LevelAchievementsID int       `json:"levelAchievementsId"`
+	Created             time.Time `json:"created"`
 }

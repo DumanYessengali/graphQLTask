@@ -3,6 +3,7 @@ package user
 import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	"time"
 )
 
 type UserRepository struct {
@@ -47,20 +48,24 @@ func (u *UserRepository) GetUserIdByUsername(username string) (string, error) {
 	return user.Id, err
 }
 func (u *UserRepository) CreateUser(user *User) (*User, error) {
-	rows, err := u.DB.Query("insert into users(username, password,role) values($1,$2,$3,$4) returning *", user.Username, user.Password, UserRolesUser, 0)
+	rows, err := u.DB.Query("insert into users(username, password,role,point) values($1,$2,$3,$4) returning *", user.Username, user.Password, UserRolesUser, 0)
 	if err != nil {
 		return nil, err
 	}
 
+	if err != nil {
+		return nil, err
+	}
 	var mup *User
 	for rows.Next() {
 		var m User
-		err := rows.Scan(&m.Id, &m.Username, &m.Password, &m.Role)
+		err := rows.Scan(&m.Id, &m.Username, &m.Password, &m.Role, &m.Point)
 		if err != nil {
 			return nil, err
 		}
-
 		mup = &m
 	}
+	_, err = u.DB.Query("insert into user_achievements(user_id, level_achievements_id, created)values($1,$2,$3)", mup.Id, nil, time.Now())
+
 	return mup, nil
 }

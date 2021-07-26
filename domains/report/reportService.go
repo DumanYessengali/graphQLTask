@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"strconv"
 	"twoBinPJ/domains/user"
 )
 
@@ -159,8 +160,14 @@ func (r *ReportService) VerifyReport(ctx context.Context, id int, reportStatus s
 		log.Printf("error while initializing report: %s", err)
 		return nil, errors.New("INITIALIZING_REPORT_ERROR")
 	}
+	userID := strconv.Itoa(reportWhichWantToChange.UserID)
+	currentUser1, err := r.UserService.GetUserByIDService(userID)
+	if err != nil {
+		log.Printf("error while initializing user error")
+		return nil, err
+	}
 	if reportWhichWantToChange.Status != ReportStatusConfirm {
-		verifiedReport, err := r.Repository.UpdateReportStatus(reportWhichWantToChange.UserID, reportWhichWantToChange.Point, id, reportStatus)
+		verifiedReport, err := r.Repository.UpdateReportStatus(reportWhichWantToChange.UserID, reportWhichWantToChange.Point, id, reportStatus, currentUser1.Point)
 		if err != nil {
 			log.Printf("error while updating report: %s", err)
 			return nil, errors.New("UPDATING_REPORT_ERROR")

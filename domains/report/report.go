@@ -61,7 +61,7 @@ type IReportRepository interface {
 	UpdateReport(name, description, comments, seriousness string, id int, didUpdateComments bool) error
 	DeleteReport(id int) error
 	SelectReportByStatus(status string) ([]*Report, error)
-	UpdateReportStatus(user_id, point, report_id int, reportStauts string) (*Report, error)
+	UpdateReportStatus(user_id, point, report_id int, reportStauts string, userCurrentPoints int) (*Report, error)
 }
 
 type IReportService interface {

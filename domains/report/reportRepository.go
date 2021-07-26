@@ -112,10 +112,10 @@ func (r *ReportRepository) SelectReportByStatus(status string) ([]*Report, error
 	return report, nil
 }
 
-func (r *ReportRepository) UpdateReportStatus(user_id, point, report_id int, reportStatus string) (*Report, error) {
+func (r *ReportRepository) UpdateReportStatus(user_id, point, report_id int, reportStatus string, userCurrentPoints int) (*Report, error) {
 	var row *sql.Rows
 	var err error
-
+	//select max(points) from level_achievements where  points< 10;
 	if reportStatus == string(ReportStatusConfirm) {
 		_, err = r.DB.Query("update users set point = point+$1 where id=$2", point, user_id)
 		if err != nil {
@@ -129,7 +129,10 @@ func (r *ReportRepository) UpdateReportStatus(user_id, point, report_id int, rep
 		if err != nil {
 			return nil, err
 		}
-
+		_, err = r.DB.Query("update user_achievements set level_achievements_id =(select max(id) from level_achievements where  points< $1) where user_id = $2", point+userCurrentPoints, user_id)
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		_, err = r.DB.Query("update report set status = $1 where id=$2", reportStatus, report_id)
 		if err != nil {
@@ -154,6 +157,7 @@ func (r *ReportRepository) UpdateReportStatus(user_id, point, report_id int, rep
 
 		report = &r
 	}
+
 	return report, nil
 
 }
